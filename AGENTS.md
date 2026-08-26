@@ -147,6 +147,8 @@ python3 -m http.server 8080 --directory site
 
 Open `http://127.0.0.1:8080/`. If `site/` does not exist yet, do not invent a server.
 
+**Always verify the deployed Vercel site**, not only local files. After a push (or after the user says they deployed), open `https://marcell-portfolio-psi.vercel.app/`, confirm HTML/CSS/JS/assets return 200, and check the live page visually (desktop + mobile): copy, hall assets, CTAs, and the chibi avatar. Local-only QA is not enough.
+
 Optional later host: Tailscale `http://<name>.marcell/` using the local-site-hosting skill. Use `http://` only. Do not enable HTTPS for `.marcell`.
 
 ## Copy rules
