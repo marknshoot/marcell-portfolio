@@ -184,49 +184,6 @@ a:focus-visible,
   margin-inline: auto;
 }
 
-.deco {
-  position: absolute;
-  pointer-events: none;
-  user-select: none;
-}
-
-.deco-ivy-tl {
-  top: -12px;
-  left: -88px;
-  z-index: 0;
-  width: 260px;
-  height: auto;
-  opacity: 0.82;
-}
-
-.deco-arch {
-  top: 6%;
-  left: 10%;
-  z-index: 0;
-  width: min(64%, 250px);
-  height: auto;
-  opacity: 0.14;
-}
-
-.deco-lantern {
-  top: 12px;
-  left: -8px;
-  z-index: 2;
-  width: 84px;
-  height: auto;
-  filter: drop-shadow(0 10px 12px rgba(18, 24, 38, 0.12));
-}
-
-.deco-ivy-br {
-  right: -48px;
-  bottom: 8px;
-  z-index: 0;
-  width: min(38vw, 280px);
-  height: auto;
-  transform: rotate(180deg);
-  opacity: 0.72;
-}
-
 .hero {
   position: relative;
   display: grid;
@@ -731,7 +688,6 @@ a:focus-visible,
 }
 
 .foot {
-  position: relative;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
@@ -869,27 +825,6 @@ a:focus-visible,
     grid-template-columns: 1fr;
     gap: 28px;
     padding-top: 36px;
-  }
-
-  .deco-ivy-tl {
-    display: none;
-  }
-
-  .deco-lantern {
-    top: 8px;
-    left: 0;
-    width: 52px;
-  }
-
-  .deco-arch {
-    width: 180px;
-    opacity: 0.12;
-  }
-
-  .deco-ivy-br {
-    width: 160px;
-    right: -24px;
-    opacity: 0.55;
   }
 
   .year-mark {

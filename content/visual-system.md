@@ -65,7 +65,7 @@ Dark page without the neon-violet look. Background is charcoal-brown, not #000. 
 ## Shared rules (all options)
 
 - Type: **Montserrat** (self-hosted `site/fonts/montserrat-latin.woff2`). Student asked for Montserrat or Poppins; Poppins is the default intern-template face, so Montserrat is the one we ship. No Google Fonts runtime request.
-- Decoration: transparent PNGs from Marcell’s jacket world — person cutout, DS chenille patch, open book — plus quiet **campus overlays** (ivy corner, hanging lantern, faint chapel tracery). Overlays sit on Option A cream/navy. They must not rewrite copy, rename sections, or swap the typeface/palette. Not parchment, not Garamond, not a college-hall restyle.
+- Decoration: transparent PNGs from Marcell’s jacket world — person cutout, DS chenille patch, open book. Large faint copies in the **background**; smaller rotated copies in the **foreground** of the hero. Not generic 3D blobs.
 - One filled CTA. Chips and tags are outlines.
 - Card radius 12px, 1px line, no stacked shadows.
 - No GSAP, gradients-as-personality, glass, or metric count-ups.
