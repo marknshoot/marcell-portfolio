@@ -6,10 +6,23 @@
     <title>Book frames</title>
     <link rel="stylesheet" href="styles.css" />
     <style>
-      body { margin: 0; background: #f3efe6; }
-      .folio { display: block !important; width: min(900px, 100%); margin: 16px auto; }
-      .folio-sticky { position: relative; top: auto; }
-      .folio-spacer { display: none; }
+      body {
+        margin: 0;
+        background: #f3efe6;
+      }
+      .folio {
+        display: block !important;
+        width: min(960px, calc(100% - 32px));
+        margin: 24px auto;
+      }
+      .folio-sticky {
+        position: relative;
+        top: auto;
+        background: transparent;
+      }
+      .folio-spacer {
+        display: none;
+      }
     </style>
   </head>
   <body>
@@ -21,26 +34,49 @@
           <li><button type="button" data-page="2">03 RAG</button></li>
         </ol>
         <div class="book is-shut" id="book">
-          <div class="book-stage">
-            <img class="book-shot" id="book-shot" src="assets/book/closed.jpg" width="1400" height="788" alt="" />
-            <div class="holo-beam" aria-hidden="true"></div>
-            <div class="book-hover" id="book-hover">
-              <article class="book-float is-on" data-page="0">
-                <span class="tag">In progress</span>
-                <h3>Toko Marcell</h3>
-                <p>Hybrid search, recommendations, copilot.</p>
-              </article>
-              <article class="book-float" data-page="1" hidden>
-                <span class="tag tag-done">Finished</span>
-                <h3>Credit-Risk Deep-Dive</h3>
-                <p>Grouped split, honest evaluation.</p>
-              </article>
-              <article class="book-float" data-page="2" hidden>
-                <span class="tag tag-plan">Planned</span>
-                <h3>RAG Research Agent</h3>
-                <p>Query, retrieve, cited answer.</p>
-              </article>
+          <div class="book-shadow" aria-hidden="true"></div>
+          <div class="shut-rig" aria-hidden="true">
+            <div class="shut-spine">
+              <span class="rib"></span><span class="rib"></span><span class="rib"></span>
+              <span class="rib"></span><span class="rib"></span>
             </div>
+            <div class="shut-cover">
+              <span class="foil foil-cover">Selected work</span>
+              <span class="foil foil-small">DS 26 · 27</span>
+            </div>
+            <img class="shut-block" src="assets/book/edges.png" alt="" width="48" height="240" />
+          </div>
+          <div class="open-rig" aria-hidden="true">
+            <div class="well well-l"></div>
+            <div class="gutter"></div>
+            <div class="well well-r"></div>
+            <div class="leaf" data-leaf="0"><span class="face front"></span><span class="face back"></span></div>
+            <div class="leaf" data-leaf="1"><span class="face front"></span><span class="face back"></span></div>
+            <div class="leaf" data-leaf="2"><span class="face front"></span><span class="face back"></span></div>
+            <div class="leaf" data-leaf="3"><span class="face front"></span><span class="face back"></span></div>
+            <div class="leaf" data-leaf="4"><span class="face front"></span><span class="face back"></span></div>
+            <div class="leaf" data-leaf="5"><span class="face front"></span><span class="face back"></span></div>
+            <div class="leaf" data-leaf="6"><span class="face front"></span><span class="face back"></span></div>
+            <div class="leaf" data-leaf="7"><span class="face front"></span><span class="face back"></span></div>
+            <div class="leaf" data-leaf="8"><span class="face front"></span><span class="face back"></span></div>
+          </div>
+          <div class="holo-beam" aria-hidden="true"></div>
+          <div class="book-hover" id="book-hover">
+            <article class="book-float is-on" data-page="0">
+              <span class="tag">In progress</span>
+              <h3>Toko Marcell</h3>
+              <p>Hybrid search, recommendations, copilot.</p>
+            </article>
+            <article class="book-float" data-page="1" hidden>
+              <span class="tag tag-done">Finished</span>
+              <h3>Credit-Risk Deep-Dive</h3>
+              <p>Grouped split, honest evaluation.</p>
+            </article>
+            <article class="book-float" data-page="2" hidden>
+              <span class="tag tag-plan">Planned</span>
+              <h3>RAG Research Agent</h3>
+              <p>Query, retrieve, cited answer.</p>
+            </article>
           </div>
         </div>
         <p class="folio-hint"><span>frame</span><span class="folio-count" id="folio-count">closed</span></p>

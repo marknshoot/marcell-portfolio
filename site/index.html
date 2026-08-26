@@ -104,17 +104,34 @@
               </li>
             </ol>
             <div class="book is-shut" id="book">
-              <div class="book-stage">
-                <img
-                  class="book-shot"
-                  id="book-shot"
-                  src="assets/book/closed.jpg"
-                  width="1400"
-                  height="788"
-                  alt="Navy leather dictionary"
-                />
-                <div class="holo-beam" aria-hidden="true"></div>
-                <div class="book-hover" id="book-hover">
+              <div class="book-shadow" aria-hidden="true"></div>
+              <div class="shut-rig" aria-hidden="true">
+                <div class="shut-spine">
+                  <span class="rib"></span><span class="rib"></span><span class="rib"></span>
+                  <span class="rib"></span><span class="rib"></span>
+                </div>
+                <div class="shut-cover">
+                  <span class="foil foil-cover">Selected work</span>
+                  <span class="foil foil-small">DS 26 · 27</span>
+                </div>
+                <img class="shut-block" src="assets/book/edges.png" alt="" width="48" height="240" />
+              </div>
+              <div class="open-rig" aria-hidden="true">
+                <div class="well well-l"></div>
+                <div class="gutter"></div>
+                <div class="well well-r"></div>
+                <div class="leaf" data-leaf="0"><span class="face front"></span><span class="face back"></span></div>
+                <div class="leaf" data-leaf="1"><span class="face front"></span><span class="face back"></span></div>
+                <div class="leaf" data-leaf="2"><span class="face front"></span><span class="face back"></span></div>
+                <div class="leaf" data-leaf="3"><span class="face front"></span><span class="face back"></span></div>
+                <div class="leaf" data-leaf="4"><span class="face front"></span><span class="face back"></span></div>
+                <div class="leaf" data-leaf="5"><span class="face front"></span><span class="face back"></span></div>
+                <div class="leaf" data-leaf="6"><span class="face front"></span><span class="face back"></span></div>
+                <div class="leaf" data-leaf="7"><span class="face front"></span><span class="face back"></span></div>
+                <div class="leaf" data-leaf="8"><span class="face front"></span><span class="face back"></span></div>
+              </div>
+              <div class="holo-beam" aria-hidden="true"></div>
+              <div class="book-hover" id="book-hover">
                 <article class="book-float is-on" data-page="0">
                   <span class="tag" data-i18n="p1.status">In progress</span>
                   <h3>Toko Marcell</h3>
@@ -143,7 +160,6 @@
                   </p>
                   <p class="stack">FastAPI · pgvector · RAGAS · MCP SDK · Groq / OpenRouter</p>
                 </article>
-                </div>
               </div>
             </div>
             <p class="folio-hint">
