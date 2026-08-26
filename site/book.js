@@ -1,4 +1,4 @@
-import { initBook } from "./book3d.js";
+import { initBook } from "./book3d.js?v=turnlock";
 
 (() => {
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -54,6 +54,10 @@ import { initBook } from "./book3d.js";
     });
   }
 
+  function turning() {
+    return busy || (book3d && book3d.isBusy());
+  }
+
   function lockTurn() {
     busy = true;
     acc = 0;
@@ -101,6 +105,7 @@ import { initBook } from "./book3d.js";
   }
 
   function applyStep(next, animate) {
+    if (turning() && next !== step) return;
     step = next;
     if (step === OPEN || step === SHUT) {
       book.classList.add("is-shut");
@@ -110,27 +115,22 @@ import { initBook } from "./book3d.js";
       book.classList.remove("is-shut");
       page = step - PAGE0;
       showFloat(false);
-      window.setTimeout(() => showFloat(true), animate ? 420 : 0);
+      window.setTimeout(() => showFloat(true), animate === false ? 0 : 420);
     }
     paintTabs();
     html.classList.toggle("book-hold", step !== OPEN && step !== SHUT);
-    if (animate) {
-      lockTurn();
-      if (book3d) book3d.setStep(step, unlockTurn);
-      else window.setTimeout(unlockTurn, 860);
-    } else if (book3d) {
-      book3d.setStep(step);
-      unlockTurn();
-    }
+    lockTurn();
+    if (book3d) book3d.setStep(step, unlockTurn);
+    else window.setTimeout(unlockTurn, animate === false ? 0 : 900);
     clamp();
   }
 
   function advance(dir) {
-    if (busy) return;
+    if (turning()) return;
     const next = step + dir;
     if (next < OPEN || next > LAST) return;
     acc = 0;
-    applyStep(next, !reduce);
+    applyStep(next, true);
   }
 
   function onWheel(e) {
@@ -142,7 +142,7 @@ import { initBook } from "./book3d.js";
     if (px > 0) {
       if (y >= max - 1) {
         e.preventDefault();
-        if (busy) {
+        if (turning()) {
           acc = 0;
           return;
         }
@@ -163,7 +163,7 @@ import { initBook } from "./book3d.js";
     if (px < 0) {
       if (y <= min + 1) {
         e.preventDefault();
-        if (busy) {
+        if (turning()) {
           acc = 0;
           return;
         }
@@ -195,7 +195,7 @@ import { initBook } from "./book3d.js";
     if (dy > 0) {
       if (y >= max - 1) {
         e.preventDefault();
-        if (busy) return;
+        if (turning()) return;
         if (step < LAST && dy > 20) {
           touchY = e.touches[0].clientY;
           advance(1);
@@ -212,7 +212,7 @@ import { initBook } from "./book3d.js";
     if (dy < 0) {
       if (y <= min + 1) {
         e.preventDefault();
-        if (busy) return;
+        if (turning()) return;
         if (step > OPEN && dy < -20) {
           touchY = e.touches[0].clientY;
           advance(-1);
@@ -236,21 +236,21 @@ import { initBook } from "./book3d.js";
 
     if (down && y >= max - 1) {
       e.preventDefault();
-      if (!busy && step < LAST) advance(1);
+      if (!turning() && step < LAST) advance(1);
       return;
     }
     if (up && y <= min + 1) {
       e.preventDefault();
-      if (!busy && step > OPEN) advance(-1);
+      if (!turning() && step > OPEN) advance(-1);
     }
   }
 
   tabs.forEach((btn) => {
     btn.addEventListener("click", () => {
-      if (busy) return;
+      if (turning()) return;
       const i = Number(btn.getAttribute("data-page"));
       if (!Number.isFinite(i)) return;
-      applyStep(PAGE0 + i, !reduce);
+      applyStep(PAGE0 + i, true);
     });
   });
 

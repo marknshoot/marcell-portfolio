@@ -187,6 +187,11 @@ export function initBook(canvas) {
   let last = performance.now();
   let turnToken = 0;
   let onTurnDone = null;
+  let settleUntil = 0;
+
+  function isBusy() {
+    return delayedPage !== targetPage || performance.now() < settleUntil;
+  }
 
   function finishTurn(token) {
     if (token !== turnToken) return;
@@ -198,10 +203,12 @@ export function initBook(canvas) {
   function stepTowardTarget(token) {
     if (token !== turnToken) return;
     if (delayedPage === targetPage) {
-      window.setTimeout(() => finishTurn(token), 420);
+      settleUntil = performance.now() + 720;
+      window.setTimeout(() => finishTurn(token), 720);
       return;
     }
     delayedPage += targetPage > delayedPage ? 1 : -1;
+    settleUntil = performance.now() + 720;
     pages.forEach((p, i) => {
       if (p.opened !== delayedPage > i) {
         p.turnedAt = performance.now();
@@ -209,18 +216,21 @@ export function initBook(canvas) {
         p.opened = delayedPage > i;
       }
     });
-    window.setTimeout(() => stepTowardTarget(token), 140);
+    window.setTimeout(() => stepTowardTarget(token), 180);
   }
 
   function setPage(next, done) {
     next = Math.max(0, Math.min(PAGE_COUNT, next));
+    if (isBusy() && next !== targetPage) return;
     onTurnDone = done || null;
     const token = ++turnToken;
     if (next === targetPage && delayedPage === targetPage) {
+      settleUntil = 0;
       finishTurn(token);
       return;
     }
     targetPage = next;
+    settleUntil = performance.now() + 720;
     stepTowardTarget(token);
   }
 
@@ -286,6 +296,7 @@ export function initBook(canvas) {
   const STEP_PAGES = [0, 2, 4, 6, PAGE_COUNT];
 
   return {
+    isBusy,
     setStep(step, done) {
       setPage(STEP_PAGES[step] ?? 0, done);
     },
