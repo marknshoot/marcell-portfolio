@@ -43,13 +43,6 @@ html.book-hold {
   overscroll-behavior-y: none;
 }
 
-html.book-frozen,
-html.book-frozen body {
-  overflow: hidden;
-  overscroll-behavior: none;
-  scroll-behavior: auto !important;
-}
-
 body {
   margin: 0;
   background: var(--bg);

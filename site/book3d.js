@@ -47,9 +47,9 @@ pageGeometry.translate(PAGE_WIDTH / 2, 0, 0);
   const skinWeights = [];
   for (let i = 0; i < position.count; i++) {
     vertex.fromBufferAttribute(position, i);
-    const x = vertex.x;
-    const skinIndex = Math.max(0, Math.min(PAGE_SEGMENTS - 1, Math.floor(x / SEGMENT_WIDTH)));
-    const skinWeight = (x % SEGMENT_WIDTH) / SEGMENT_WIDTH;
+    const t = vertex.x / SEGMENT_WIDTH;
+    const skinIndex = Math.max(0, Math.min(PAGE_SEGMENTS - 1, Math.floor(t)));
+    const skinWeight = Math.max(0, Math.min(1, t - skinIndex));
     skinIndexes.push(skinIndex, skinIndex + 1, 0, 0);
     skinWeights.push(1 - skinWeight, skinWeight, 0, 0);
   }
@@ -177,62 +177,52 @@ export function initBook(canvas) {
       group,
       mesh,
       opened: false,
-      lastOpened: false,
       turnedAt: 0,
     });
   }
 
+  // Turn state machine: idle -> turning -> settling -> idle.
+  // Flips and the settle pause are both driven from the rAF clock so a
+  // throttled or hidden tab can never desync progress from the animation.
+  const FLIP_MS = 180;
+  const SETTLE_MS = 720;
+
+  let state = "idle";
   let delayedPage = 0;
   let targetPage = 0;
-  let last = performance.now();
-  let turnToken = 0;
+  let totalFlips = 0;
+  let flipsDone = 0;
+  let turnStart = 0;
+  let settleStart = 0;
   let onTurnDone = null;
-  let settleUntil = 0;
 
   function isBusy() {
-    return delayedPage !== targetPage || performance.now() < settleUntil;
+    return state !== "idle";
   }
 
-  function finishTurn(token) {
-    if (token !== turnToken) return;
-    settleUntil = 0;
+  function resolveDone() {
     const cb = onTurnDone;
     onTurnDone = null;
     if (cb) cb();
   }
 
-  function stepTowardTarget(token) {
-    if (token !== turnToken) return;
-    if (delayedPage === targetPage) {
-      settleUntil = performance.now() + 720;
-      window.setTimeout(() => finishTurn(token), 720);
-      return;
-    }
-    delayedPage += targetPage > delayedPage ? 1 : -1;
-    settleUntil = performance.now() + 720;
-    pages.forEach((p, i) => {
-      if (p.opened !== delayedPage > i) {
-        p.turnedAt = performance.now();
-        p.lastOpened = p.opened;
-        p.opened = delayedPage > i;
-      }
-    });
-    window.setTimeout(() => stepTowardTarget(token), 180);
-  }
-
   function setPage(next, done) {
     next = Math.max(0, Math.min(PAGE_COUNT, next));
-    if (isBusy() && next !== targetPage) return false;
-    onTurnDone = done || null;
-    const token = ++turnToken;
-    if (next === targetPage && delayedPage === targetPage) {
-      settleUntil = 0;
-      finishTurn(token);
+    if (state !== "idle") {
+      if (next !== targetPage) return false;
+      if (done) done();
+      return true;
+    }
+    if (next === delayedPage) {
+      if (done) done();
       return true;
     }
     targetPage = next;
-    settleUntil = performance.now() + 720;
-    stepTowardTarget(token);
+    onTurnDone = done || null;
+    totalFlips = Math.abs(targetPage - delayedPage);
+    flipsDone = 0;
+    turnStart = performance.now();
+    state = "turning";
     return true;
   }
 
@@ -244,9 +234,41 @@ export function initBook(canvas) {
     camera.updateProjectionMatrix();
   }
 
+  let last = performance.now();
+  let inView = true;
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver((entries) => {
+      inView = entries[0] ? entries[0].isIntersecting : true;
+    }).observe(canvas);
+  }
+
   function tick(now) {
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
+
+    if (state === "turning") {
+      const due = Math.min(totalFlips, Math.floor((now - turnStart) / FLIP_MS));
+      while (flipsDone < due) {
+        flipsDone++;
+        const dir = targetPage > delayedPage ? 1 : -1;
+        const prev = delayedPage;
+        delayedPage += dir;
+        const changed = dir > 0 ? prev : prev - 1;
+        const p = pages[changed];
+        p.turnedAt = now;
+        p.opened = delayedPage > changed;
+      }
+      if (flipsDone >= totalFlips) {
+        state = "settling";
+        settleStart = now;
+      }
+    } else if (state === "settling") {
+      if (now - settleStart >= SETTLE_MS) {
+        state = "idle";
+        resolveDone();
+      }
+    }
+
     const bookClosed = delayedPage === 0 || delayedPage === PAGE_COUNT;
 
     pages.forEach((p, number) => {
@@ -286,7 +308,7 @@ export function initBook(canvas) {
       mesh.position.z = -number * PAGE_DEPTH + delayedPage * PAGE_DEPTH;
     });
 
-    renderer.render(scene, camera);
+    if (inView) renderer.render(scene, camera);
     requestAnimationFrame(tick);
   }
 
