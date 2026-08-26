@@ -16,6 +16,7 @@ import {
   Skeleton,
   SkinnedMesh,
   SRGBColorSpace,
+  TextureLoader,
   Uint16BufferAttribute,
   Vector3,
   WebGLRenderer,
@@ -24,16 +25,17 @@ import {
 const PAGE_WIDTH = 1.28;
 const PAGE_HEIGHT = 1.71;
 const PAGE_DEPTH = 0.003;
-const PAGE_SEGMENTS = 10;
+const PAGE_SEGMENTS = 16;
 const SEGMENT_WIDTH = PAGE_WIDTH / PAGE_SEGMENTS;
 const PAGE_COUNT = 8;
 const OPEN_ANGLE = Math.PI / 3;
 const CLOSED_ANGLE = Math.PI / 2;
 
+const easingFactor = 0.55;
 const easingFactorFold = 0.35;
-const insideCurveStrength = 0.07;
-const outsideCurveStrength = 0.02;
-const turningCurveStrength = 0.05;
+const insideCurveStrength = 0.18;
+const outsideCurveStrength = 0.05;
+const turningCurveStrength = 0.09;
 
 const pageGeometry = new BoxGeometry(PAGE_WIDTH, PAGE_HEIGHT, PAGE_DEPTH, PAGE_SEGMENTS, 2);
 pageGeometry.translate(PAGE_WIDTH / 2, 0, 0);
@@ -107,28 +109,6 @@ function linedPaper() {
   return tex;
 }
 
-function coverPlate(title, sub) {
-  const c = document.createElement("canvas");
-  c.width = 512;
-  c.height = 704;
-  const g = c.getContext("2d");
-  g.fillStyle = "#1a2744";
-  g.fillRect(0, 0, 512, 704);
-  g.strokeStyle = "#e8dcc0";
-  g.lineWidth = 4;
-  g.strokeRect(28, 28, 456, 648);
-  g.strokeRect(40, 40, 432, 624);
-  g.fillStyle = "#e8dcc0";
-  g.textAlign = "center";
-  g.font = "600 28px Georgia, serif";
-  g.fillText(title, 256, 330);
-  g.font = "16px Georgia, serif";
-  g.fillText(sub, 256, 368);
-  const tex = new CanvasTexture(c);
-  tex.colorSpace = SRGBColorSpace;
-  return tex;
-}
-
 export function initBook(canvas) {
   const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
@@ -136,45 +116,42 @@ export function initBook(canvas) {
   renderer.shadowMap.enabled = true;
 
   const scene = new Scene();
-  const camera = new PerspectiveCamera(35, 1, 0.1, 40);
-  camera.position.set(0, 2.35, 1.55);
-  camera.lookAt(0, 0.05, 0);
+  const camera = new PerspectiveCamera(40, 1, 0.1, 40);
+  camera.position.set(0, 1.15, 2.85);
+  camera.lookAt(0, 0, 0);
 
-  const hemi = new HemisphereLight("#fffaf3", "#6b645c", 0.9);
+  const hemi = new HemisphereLight("#fffaf3", "#8a8070", 1.1);
   scene.add(hemi);
-  const dir = new DirectionalLight("#fff1dc", 1.8);
-  dir.position.set(1.4, 4.2, 0.8);
+  const dir = new DirectionalLight("#fff6ea", 2.2);
+  dir.position.set(2.2, 5, 2.4);
   dir.castShadow = true;
   dir.shadow.mapSize.set(1024, 1024);
   scene.add(dir);
 
-  const desk = new Mesh(
-    new PlaneGeometry(12, 12),
-    new MeshStandardMaterial({ color: "#f3efe6", roughness: 0.95, metalness: 0 })
-  );
-  desk.rotation.x = -Math.PI / 2;
-  desk.position.y = -0.42;
-  desk.receiveShadow = true;
-  scene.add(desk);
+  const ground = new Mesh(new PlaneGeometry(20, 20), new ShadowMaterial({ opacity: 0.22 }));
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = -1.15;
+  ground.receiveShadow = true;
+  scene.add(ground);
 
   const book = new Group();
-  book.rotation.x = -Math.PI / 2 + Math.PI / 6;
+  book.rotation.x = -Math.PI / 4;
   book.rotation.y = -Math.PI / 2;
-  book.position.y = -0.22;
   scene.add(book);
 
   const paperMap = linedPaper();
-  const coverMap = coverPlate("SELECTED WORK", "DS 26 · 27");
-  const backMap = coverPlate("M. H. KRISTIANTO", "BINUS · DATA SCIENCE");
+  const loader = new TextureLoader();
+  const leather = loader.load("assets/book/leather.jpg");
+  leather.colorSpace = SRGBColorSpace;
 
   const coverFront = new MeshStandardMaterial({
-    map: coverMap,
-    roughness: 0.62,
+    map: leather,
+    roughness: 0.55,
     color: navy,
   });
   const coverBack = new MeshStandardMaterial({
-    map: backMap,
-    roughness: 0.62,
+    map: leather,
+    roughness: 0.55,
     color: navy,
   });
   const paperMat = new MeshStandardMaterial({
