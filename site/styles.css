@@ -430,19 +430,22 @@ html.book-ok .plays > .playboard {
 
 .book {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   width: min(900px, 100%);
   margin: 0 auto;
 }
 
 #book-canvas {
   width: 100%;
-  height: 420px;
+  height: 300px;
   display: block;
+  order: 4;
 }
 
-.book:not(.is-shut) {
-  align-items: flex-end;
-  padding-bottom: 28px;
+.book.is-shut #book-canvas {
+  height: 400px;
 }
 
 .book-shadow {
@@ -487,10 +490,9 @@ html.book-ok .plays > .playboard {
 }
 
 .book.is-shut .holo-beam,
+.book.is-shut .holo-source,
 .book.is-shut .book-hover {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
+  display: none;
 }
 
 .shut-spine {
@@ -705,34 +707,39 @@ html.book-ok .plays > .playboard {
 .leaf[data-leaf="8"].is-turned { z-index: 12; }
 
 .holo-beam {
-  position: absolute;
-  left: 50%;
-  top: 52%;
-  z-index: 7;
-  width: 180px;
-  height: 120px;
-  transform: translate(-50%, -100%);
+  order: 2;
+  width: min(220px, 48%);
+  height: 64px;
   pointer-events: none;
   background: linear-gradient(
-    to top,
-    color-mix(in srgb, var(--accent) 45%, transparent),
-    rgba(243, 239, 230, 0.04)
+    to bottom,
+    color-mix(in srgb, var(--accent) 28%, transparent),
+    color-mix(in srgb, var(--accent) 8%, transparent)
   );
-  clip-path: polygon(42% 100%, 58% 100%, 100% 0, 0 0);
-  opacity: 0.5;
+  clip-path: polygon(8% 0, 92% 0, 56% 100%, 44% 100%);
+  filter: blur(0.3px);
 }
 
-.book.is-turning .holo-beam {
-  opacity: 0.12;
+.holo-source {
+  order: 3;
+  display: block;
+  width: 18px;
+  height: 18px;
+  margin: -6px 0 -8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #f3efe6 0%, color-mix(in srgb, var(--accent) 55%, transparent) 55%, transparent 70%);
+  pointer-events: none;
+}
+
+.book.is-turning .holo-beam,
+.book.is-turning .holo-source {
+  opacity: 0.15;
 }
 
 .book-hover {
-  position: absolute;
-  left: 50%;
-  top: 6px;
-  z-index: 8;
-  width: min(280px, 44%);
-  transform: translateX(-50%);
+  order: 1;
+  position: relative;
+  width: min(400px, 92%);
   pointer-events: none;
 }
 
@@ -778,8 +785,8 @@ html.book-ok .plays > .playboard {
 @keyframes holo-rise {
   from {
     opacity: 0;
-    transform: translateY(64px) scale(0.88);
-    filter: blur(5px);
+    transform: translateY(18px) scale(0.96);
+    filter: blur(4px);
   }
   to {
     opacity: 1;
@@ -1359,29 +1366,16 @@ html.book-ok .plays > .playboard {
     padding: 52px 0;
   }
 
-  .book {
-    --page-w: 148px;
-    --page-h: 190px;
-    height: 400px;
+  .book.is-shut #book-canvas {
+    height: 280px;
   }
 
-  .book-hover {
-    width: min(88%, 280px);
-    top: 4px;
-  }
-
-  .foil-cover {
-    font-size: 0.7rem;
-  }
-
-  .book-hover {
-    width: min(92%, 340px);
-    top: 20px;
+  #book-canvas {
+    height: 220px;
   }
 
   .holo-beam {
-    height: 38%;
-    bottom: 18%;
+    height: 48px;
   }
 
   .book-chapters button {
