@@ -21,8 +21,8 @@ import { initBook } from "./book3d.js";
     if (canvas) book3d = initBook(canvas);
   } catch (err) {
     console.error(err);
-    return;
   }
+
   const n = floats.length;
   const OPEN = 0;
   const PAGE0 = 1;
@@ -30,6 +30,8 @@ import { initBook } from "./book3d.js";
   const PAGE2 = 3;
   const SHUT = 4;
   const LAST = SHUT;
+  const BAR = 64;
+  const html = document.documentElement;
 
   let step = OPEN;
   let busy = false;
@@ -75,17 +77,34 @@ import { initBook } from "./book3d.js";
     }
     if (book3d) book3d.setStep(step);
     paintTabs();
+    holdClass();
     cooldown(animate ? 860 : 0);
   }
 
-  function inGate() {
-    const r = sticky.getBoundingClientRect();
-    return r.top <= 88 && r.bottom > window.innerHeight * 0.28;
+  function capY() {
+    return Math.max(0, window.scrollY + sticky.getBoundingClientRect().top - BAR);
   }
 
-  function holdScroll(dir) {
-    if (dir > 0) return step < LAST;
-    return step > OPEN;
+  function atCap() {
+    return sticky.getBoundingClientRect().top <= BAR + 18;
+  }
+
+  function holding() {
+    return step < LAST;
+  }
+
+  function holdClass() {
+    html.classList.toggle("book-hold", holding());
+  }
+
+  function clamp() {
+    const r = sticky.getBoundingClientRect();
+    if (r.top > window.innerHeight - 24 && step !== OPEN) applyStep(OPEN, false);
+    if (!holding()) return;
+    const max = capY();
+    if (window.scrollY > max + 1) {
+      window.scrollTo({ top: max, left: 0, behavior: "auto" });
+    }
   }
 
   function advance(dir) {
@@ -96,40 +115,81 @@ import { initBook } from "./book3d.js";
   }
 
   function onWheel(e) {
-    if (!inGate()) return;
-    if (Math.abs(e.deltaY) < 12) {
-      if (busy) e.preventDefault();
+    const dy = e.deltaY;
+    if (Math.abs(dy) < 8) {
+      if (holding() && atCap() && dy > 0) e.preventDefault();
       return;
     }
-    const dir = e.deltaY > 0 ? 1 : -1;
-    if (busy && holdScroll(dir)) {
+    const dir = dy > 0 ? 1 : -1;
+
+    if (dir > 0 && holding()) {
+      const remain = capY() - window.scrollY;
+      if (remain <= 96) {
+        e.preventDefault();
+        if (remain > 18) {
+          window.scrollTo({ top: capY(), left: 0, behavior: "auto" });
+          return;
+        }
+        advance(1);
+        return;
+      }
+    }
+
+    if (dir < 0 && atCap() && step > OPEN) {
       e.preventDefault();
-      return;
+      advance(-1);
     }
-    if (!holdScroll(dir)) return;
-    e.preventDefault();
-    advance(dir);
   }
 
   let touchY = null;
   function onTouchStart(e) {
-    if (!inGate()) return;
     touchY = e.touches[0].clientY;
   }
   function onTouchMove(e) {
     if (touchY == null) return;
-    if (!inGate()) return;
     const dy = touchY - e.touches[0].clientY;
     const dir = dy > 0 ? 1 : -1;
-    if (busy && holdScroll(dir)) {
-      e.preventDefault();
+
+    if (dir > 0 && holding()) {
+      if (atCap()) {
+        e.preventDefault();
+        if (Math.abs(dy) >= 24) {
+          touchY = e.touches[0].clientY;
+          advance(1);
+        }
+        return;
+      }
+      const max = capY();
+      if (window.scrollY >= max - 2) {
+        e.preventDefault();
+        window.scrollTo({ top: max, left: 0, behavior: "auto" });
+      }
       return;
     }
-    if (Math.abs(dy) < 28) return;
-    if (!holdScroll(dir)) return;
-    e.preventDefault();
-    touchY = e.touches[0].clientY;
-    advance(dir);
+
+    if (dir < 0 && atCap() && step > OPEN) {
+      e.preventDefault();
+      if (Math.abs(dy) >= 24) {
+        touchY = e.touches[0].clientY;
+        advance(-1);
+      }
+    }
+  }
+
+  function onKey(e) {
+    const down = e.key === "ArrowDown" || e.key === "PageDown" || e.key === " ";
+    const up = e.key === "ArrowUp" || e.key === "PageUp";
+    if (!down && !up) return;
+    if (down && holding() && (atCap() || capY() - window.scrollY < 48)) {
+      e.preventDefault();
+      if (!atCap()) window.scrollTo({ top: capY(), left: 0, behavior: "auto" });
+      else advance(1);
+      return;
+    }
+    if (up && atCap() && step > OPEN) {
+      e.preventDefault();
+      advance(-1);
+    }
   }
 
   tabs.forEach((btn) => {
@@ -141,9 +201,11 @@ import { initBook } from "./book3d.js";
     });
   });
 
-  window.addEventListener("wheel", onWheel, { passive: false });
-  window.addEventListener("touchstart", onTouchStart, { passive: true });
-  window.addEventListener("touchmove", onTouchMove, { passive: false });
+  window.addEventListener("wheel", onWheel, { passive: false, capture: true });
+  window.addEventListener("touchstart", onTouchStart, { passive: true, capture: true });
+  window.addEventListener("touchmove", onTouchMove, { passive: false, capture: true });
+  window.addEventListener("keydown", onKey, { capture: true });
+  window.addEventListener("scroll", clamp, { passive: true });
 
   const params = new URLSearchParams(location.search);
   const rawBook = params.get("book");

@@ -38,6 +38,11 @@ html {
   overflow-x: clip;
 }
 
+html.book-hold {
+  scroll-behavior: auto;
+  overscroll-behavior-y: none;
+}
+
 body {
   margin: 0;
   background: var(--bg);
