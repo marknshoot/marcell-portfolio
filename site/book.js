@@ -148,5 +148,11 @@
   window.addEventListener("touchstart", onTouchStart, { passive: true });
   window.addEventListener("touchmove", onTouchMove, { passive: false });
 
-  applyStep(OPEN, false);
+  const forced = Number(new URLSearchParams(location.search).get("book"));
+  if (Number.isFinite(forced) && forced >= OPEN && forced <= LAST) {
+    applyStep(forced, false);
+    book.scrollIntoView({ block: "center" });
+  } else {
+    applyStep(OPEN, false);
+  }
 })();
