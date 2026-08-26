@@ -14,7 +14,7 @@
       content="AI agents and ML systems that actually run. Open for AI Engineer internships."
     />
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=noq6" />
     <script type="importmap">
       { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }
     </script>
@@ -89,65 +89,10 @@
       </section>
 
       <section class="plays" id="projects">
-        <div class="folio" id="folio">
-          <div class="folio-sticky">
-            <header class="plays-head">
-              <p class="kicker" data-i18n="projects.kicker">Proof</p>
-              <h2 data-i18n="projects.title">Selected work</h2>
-            </header>
-            <ol class="book-chapters">
-              <li>
-                <button type="button" data-page="0" aria-current="true"><span>01</span> Toko Marcell</button>
-              </li>
-              <li>
-                <button type="button" data-page="1"><span>02</span> Credit-Risk</button>
-              </li>
-              <li>
-                <button type="button" data-page="2"><span>03</span> RAG Agent</button>
-              </li>
-            </ol>
-            <div class="book is-shut" id="book">
-              <div class="book-hover" id="book-hover">
-                <article class="book-float is-on" data-page="0">
-                  <span class="tag" data-i18n="p1.status">In progress</span>
-                  <h3>Toko Marcell</h3>
-                  <p data-i18n="p1.body">
-                    Indonesian e-commerce with hybrid search (BM25 + embeddings), session recommendations, and a
-                    tool-using copilot in one stack. Still in progress — evaluation comes before any score on this page.
-                  </p>
-                  <p class="stack">Next.js · FastAPI · pgvector · Docker</p>
-                </article>
-                <article class="book-float" data-page="1">
-                  <span class="tag tag-done" data-i18n="p2.status">Finished</span>
-                  <h3>Credit-Risk Deep-Dive</h3>
-                  <p data-i18n="p2.body">
-                    Credit scoring on a 50,000-row customer panel, from SQL through model, SHAP, and cost math. A random
-                    split leaked customers into both train and test; the write-up uses a grouped split and reports the
-                    honest drop. Method and numbers are in the GitHub README.
-                  </p>
-                  <p class="stack">Python · SQL · scikit-learn · SHAP · Kaggle</p>
-                </article>
-                <article class="book-float" data-page="2">
-                  <span class="tag tag-plan" data-i18n="p3.status">Planned</span>
-                  <h3>RAG Research Agent</h3>
-                  <p data-i18n="p3.body">
-                    Planned research agent: query → plan → retrieve → cited answer, with retrieval eval and tools over MCP.
-                    On this page as direction, not as shipped work.
-                  </p>
-                  <p class="stack">FastAPI · pgvector · RAGAS · MCP SDK · Groq / OpenRouter</p>
-                </article>
-              </div>
-              <div class="holo-beam" aria-hidden="true"></div>
-              <span class="holo-source" aria-hidden="true"></span>
-              <canvas id="book-canvas" width="900" height="480"></canvas>
-            </div>
-            <p class="folio-hint">
-              <span data-i18n="book.hint">Scroll once, then wait</span>
-              <span class="folio-count" id="folio-count">closed</span>
-            </p>
-          </div>
-          <div class="folio-spacer" aria-hidden="true"></div>
-        </div>
+        <header class="plays-head">
+          <p class="kicker" data-i18n="projects.kicker">Proof</p>
+          <h2 data-i18n="projects.title">Selected work</h2>
+        </header>
 
         <div class="playboard">
           <article class="play play-shop">
@@ -358,7 +303,6 @@
       <span class="pet-tip">Tiny me. Click to wave.</span>
     </aside>
     <script src="i18n.js" defer></script>
-    <script type="module" src="book.js?v=noq5"></script>
     <script src="pet.js?v=noq6" defer></script>
   </body>
 </html>
