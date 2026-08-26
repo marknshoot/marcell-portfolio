@@ -38,7 +38,9 @@ import { initBook } from "./book3d.js";
   let busy = false;
   let page = 0;
   let frozen = false;
-  let lastY = window.scrollY;
+  let dockY = 0;
+  let speed = 0;
+  let lastWheelAt = 0;
 
   function paintTabs() {
     tabs.forEach((btn, i) => {
@@ -66,17 +68,31 @@ import { initBook } from "./book3d.js";
     }, ms);
   }
 
-  function capY() {
-    return Math.max(0, window.scrollY + sticky.getBoundingClientRect().top - BAR);
-  }
-
-  function atCap() {
-    const top = sticky.getBoundingClientRect().top;
-    return top > BAR - 40 && top <= BAR + 24;
-  }
-
   function scroller() {
     return document.scrollingElement || html;
+  }
+
+  function refreshDock() {
+    dockY = Math.max(0, Math.round(window.scrollY + folio.getBoundingClientRect().top - BAR));
+  }
+
+  function atDock() {
+    return Math.abs(scroller().scrollTop - dockY) <= 8;
+  }
+
+  function wheelPx(e) {
+    let d = e.deltaY;
+    if (e.deltaMode === 1) d *= 16;
+    if (e.deltaMode === 2) d *= window.innerHeight;
+    return d;
+  }
+
+  function lookahead(px) {
+    const now = performance.now();
+    const dt = Math.max(8, now - lastWheelAt);
+    lastWheelAt = now;
+    speed = speed * 0.55 + px / dt * 16;
+    return Math.min(1400, Math.max(220, Math.abs(px) * 5, Math.abs(speed) * 50));
   }
 
   function freeze() {
@@ -93,6 +109,17 @@ import { initBook } from "./book3d.js";
     html.classList.remove("book-frozen");
     body.classList.remove("book-frozen");
     html.classList.toggle("book-hold", step > OPEN && step < LAST);
+  }
+
+  function pin() {
+    if (!frozen) refreshDock();
+    freeze();
+    const el = scroller();
+    if (Math.abs(el.scrollTop - dockY) <= 0.5) return;
+    el.scrollTop = dockY;
+    requestAnimationFrame(() => {
+      if (Math.abs(el.scrollTop - dockY) > 0.5) el.scrollTop = dockY;
+    });
   }
 
   function applyStep(next, animate) {
@@ -113,16 +140,6 @@ import { initBook } from "./book3d.js";
     cooldown(animate ? 860 : 0);
   }
 
-  function dock(e, dir) {
-    e.preventDefault();
-    const el = scroller();
-    const y = el.scrollTop;
-    const max = capY();
-    if (dir > 0 && y < max - 1) el.scrollTop = max;
-    if (dir < 0 && y > max + 1) el.scrollTop = max;
-    freeze();
-  }
-
   function advance(dir) {
     if (busy) return;
     const next = step + dir;
@@ -130,44 +147,57 @@ import { initBook } from "./book3d.js";
     applyStep(next, true);
   }
 
-  function wouldPass(dir, delta) {
-    const pad = Math.max(24, Math.abs(delta));
-    if (dir > 0) return capY() - window.scrollY <= pad;
-    return window.scrollY - capY() <= pad;
+  function catchDown(px) {
+    if (step >= LAST) return false;
+    refreshDock();
+    const remain = dockY - scroller().scrollTop;
+    return remain <= lookahead(px);
+  }
+
+  function catchUp(px) {
+    if (step <= OPEN) return false;
+    refreshDock();
+    const remain = scroller().scrollTop - dockY;
+    return remain <= lookahead(px);
   }
 
   function onWheel(e) {
-    const dy = e.deltaY;
-    const dir = dy > 0 ? 1 : -1;
+    const px = wheelPx(e);
+    const dir = px > 0 ? 1 : -1;
 
     if (frozen) {
-      if (busy || Math.abs(dy) < 8) {
+      if (busy || Math.abs(px) < 8) {
         e.preventDefault();
+        pin();
         return;
       }
       if (dir > 0) {
         if (step < LAST) {
           e.preventDefault();
+          pin();
           advance(1);
         } else unfreeze();
       } else if (step > OPEN) {
         e.preventDefault();
+        pin();
         advance(-1);
       } else unfreeze();
       return;
     }
 
-    if (Math.abs(dy) < 8) return;
+    if (Math.abs(px) < 8) return;
 
-    if (dir > 0 && step < LAST && (atCap() || wouldPass(1, dy))) {
-      const already = atCap() || capY() - window.scrollY <= 24;
-      dock(e, 1);
+    if (dir > 0 && catchDown(px)) {
+      e.preventDefault();
+      const already = atDock() || dockY - scroller().scrollTop <= 32;
+      pin();
       if (already) advance(1);
       return;
     }
 
-    if (dir < 0 && step > OPEN && (atCap() || wouldPass(-1, dy))) {
-      dock(e, -1);
+    if (dir < 0 && catchUp(px)) {
+      e.preventDefault();
+      pin();
     }
   }
 
@@ -199,12 +229,14 @@ import { initBook } from "./book3d.js";
       return;
     }
 
-    if (dir > 0 && step < LAST && (atCap() || wouldPass(1, dy))) {
-      dock(e, 1);
+    if (dir > 0 && catchDown(dy)) {
+      e.preventDefault();
+      pin();
       return;
     }
-    if (dir < 0 && step > OPEN && (atCap() || wouldPass(-1, dy))) {
-      dock(e, -1);
+    if (dir < 0 && catchUp(dy)) {
+      e.preventDefault();
+      pin();
     }
   }
 
@@ -231,23 +263,32 @@ import { initBook } from "./book3d.js";
       return;
     }
 
-    if (dir > 0 && step < LAST && (atCap() || capY() - window.scrollY < 64)) {
-      dock(e, 1);
+    if (dir > 0 && step < LAST) {
+      refreshDock();
+      if (scroller().scrollTop >= dockY - 80) {
+        e.preventDefault();
+        pin();
+      }
       return;
     }
-    if (dir < 0 && step > OPEN && (atCap() || window.scrollY - capY() < 64)) {
-      dock(e, -1);
+    if (dir < 0 && step > OPEN) {
+      refreshDock();
+      if (scroller().scrollTop <= dockY + 80) {
+        e.preventDefault();
+        pin();
+      }
     }
   }
 
   function onScroll() {
-    const y = window.scrollY;
-    const goingDown = y > lastY + 1;
-    const goingUp = y < lastY - 1;
-    lastY = y;
-    if (frozen) return;
-    if (goingDown && step < LAST && atCap()) freeze();
-    if (goingUp && step > OPEN && atCap()) freeze();
+    if (frozen) {
+      pin();
+      return;
+    }
+    refreshDock();
+    const y = scroller().scrollTop;
+    if (step < LAST && y > dockY + 2) pin();
+    if (step > OPEN && y < dockY - 2) pin();
   }
 
   tabs.forEach((btn) => {

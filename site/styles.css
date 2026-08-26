@@ -47,6 +47,7 @@ html.book-frozen,
 html.book-frozen body {
   overflow: hidden;
   overscroll-behavior: none;
+  scroll-behavior: auto !important;
 }
 
 body {
