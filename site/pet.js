@@ -1,8 +1,8 @@
 (() => {
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const closeHost = document.getElementById("close");
   const closeChibi = document.querySelector(".close-chibi");
   if (closeHost && closeChibi) {
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const io = new IntersectionObserver(
       (entries) => {
         const on = entries.some((e) => e.isIntersecting && e.intersectionRatio >= 0.28);
@@ -107,6 +107,12 @@
   let dragOffY = 0;
   let lastDragSay = 0;
   let dragLine = 0;
+  let lastMoveT = 0;
+  let lastMoveY = 0;
+  let releaseVy = 0;
+  let vy = 0;
+
+  const GRAVITY = 0.0038;
 
   function place() {
     el.style.left = `${Math.round(x)}px`;
@@ -169,9 +175,31 @@
       return;
     }
 
+    if (mode === "fall") {
+      vy += GRAVITY * dt;
+      y += vy * dt;
+      const floor = maxY();
+      if (y >= floor) {
+        y = floor;
+        if (!reduce && Math.abs(vy) > 0.5) {
+          vy = -vy * 0.28;
+        } else {
+          vy = 0;
+          say(pack().drop);
+          startWalk(dir > 0 ? maxX() : minX());
+        }
+      }
+      img.src = idle;
+      img.removeAttribute("data-f");
+      img.style.transform = "none";
+      place();
+      requestAnimationFrame(tick);
+      return;
+    }
+
     const sec = visibleSection();
     el.classList.toggle("pet--away", sec === "close");
-    if (sec !== shownSection && mode !== "wave") {
+    if (sec !== shownSection && mode !== "wave" && mode !== "fall") {
       shownSection = sec;
       const map = { hero: L.hero, projects: L.projects, skills: L.skills, about: L.about, close: L.close };
       if (map[sec] && sec !== "close") say(map[sec], 3200);
@@ -225,6 +253,8 @@
     el.classList.add("pet--drag");
     frame = 0;
     lastDragSay = 0;
+    lastMoveT = 0;
+    releaseVy = 0;
     say(pack().grab, 1600);
   });
 
@@ -233,6 +263,15 @@
     const nx = e.clientX - dragOffX;
     const ny = e.clientY - dragOffY;
     if (Math.abs(nx - x) + Math.abs(ny - y) > 6) dragMoved = true;
+    const now = performance.now();
+    if (lastMoveT && now > lastMoveT + 4) {
+      releaseVy = releaseVy * 0.6 + ((ny - lastMoveY) / (now - lastMoveT)) * 0.4;
+      lastMoveY = ny;
+      lastMoveT = now;
+    } else if (!lastMoveT) {
+      lastMoveY = ny;
+      lastMoveT = now;
+    }
     x = nx;
     y = ny;
     clamp();
@@ -248,10 +287,15 @@
       mode = "wave";
       waveUntil = performance.now() + 1400;
       say(pack().wave);
-    } else {
+      return;
+    }
+    if (reduce || y >= maxY() - 1) {
       say(pack().drop);
       startWalk(dir > 0 ? maxX() : minX());
+      return;
     }
+    mode = "fall";
+    vy = Math.max(-2.5, Math.min(2.5, releaseVy));
   });
 
   xbtn.addEventListener("click", (e) => {
