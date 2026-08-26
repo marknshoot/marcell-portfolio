@@ -40,6 +40,7 @@ import { initBook } from "./book3d.js";
   let dockY = 0;
   let speed = 0;
   let lastWheelAt = 0;
+  let acc = 0;
 
   function paintTabs() {
     tabs.forEach((btn, i) => {
@@ -105,6 +106,7 @@ import { initBook } from "./book3d.js";
   function unfreeze() {
     if (!frozen) return;
     frozen = false;
+    acc = 0;
     html.classList.remove("book-frozen");
     body.classList.remove("book-frozen");
     html.classList.toggle("book-hold", step > OPEN && step < LAST);
@@ -116,6 +118,8 @@ import { initBook } from "./book3d.js";
     const el = scroller();
     if (Math.abs(el.scrollTop - dockY) <= 0.5) return;
     el.scrollTop = dockY;
+    html.scrollTop = dockY;
+    body.scrollTop = dockY;
     requestAnimationFrame(() => {
       if (Math.abs(el.scrollTop - dockY) > 0.5) el.scrollTop = dockY;
     });
@@ -165,38 +169,33 @@ import { initBook } from "./book3d.js";
     const dir = px > 0 ? 1 : -1;
 
     if (frozen) {
-      if (busy || Math.abs(px) < 8) {
-        e.preventDefault();
-        pin();
-        return;
+      e.preventDefault();
+      pin();
+      if (busy) return;
+      acc += px;
+      if (acc > 36) {
+        acc = 0;
+        if (step < LAST) advance(1);
+        else unfreeze();
+      } else if (acc < -36) {
+        acc = 0;
+        if (step > OPEN) advance(-1);
+        else unfreeze();
       }
-      if (dir > 0) {
-        if (step < LAST) {
-          e.preventDefault();
-          pin();
-          advance(1);
-        } else unfreeze();
-      } else if (step > OPEN) {
-        e.preventDefault();
-        pin();
-        advance(-1);
-      } else unfreeze();
       return;
     }
 
-    if (Math.abs(px) < 8) return;
-
-    if (dir > 0 && catchDown(px)) {
+    if (dir > 0 && catchDown(px || 24)) {
       e.preventDefault();
-      const already = atDock() || dockY - scroller().scrollTop <= 32;
       pin();
-      if (already) advance(1);
+      acc = 0;
       return;
     }
 
-    if (dir < 0 && catchUp(px)) {
+    if (dir < 0 && catchUp(px || 24)) {
       e.preventDefault();
       pin();
+      acc = 0;
     }
   }
 
@@ -298,11 +297,6 @@ import { initBook } from "./book3d.js";
       applyStep(PAGE0 + i, !reduce);
     });
   });
-
-  if (reduce) {
-    applyStep(PAGE0, false);
-    return;
-  }
 
   document.querySelectorAll(".bar a[href^='#']").forEach((a) => {
     a.addEventListener("click", () => {
