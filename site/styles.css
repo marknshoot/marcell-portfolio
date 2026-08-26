@@ -723,12 +723,23 @@ a:focus-visible,
 .pet {
   position: fixed;
   left: 16px;
+  top: auto;
   bottom: 16px;
   z-index: 9999;
   width: 120px;
-  cursor: pointer;
+  cursor: grab;
   user-select: none;
   pointer-events: auto;
+  touch-action: none;
+}
+
+.pet--drag {
+  cursor: grabbing;
+  z-index: 10000;
+}
+
+.pet--drag .pet-img {
+  animation: pet-swing 0.35s ease-in-out infinite alternate;
 }
 
 .pet-img {
@@ -782,6 +793,15 @@ a:focus-visible,
 
 .pet-say.on {
   display: block;
+}
+
+@keyframes pet-swing {
+  from {
+    transform: rotate(-11deg) translateY(0);
+  }
+  to {
+    transform: rotate(11deg) translateY(6px);
+  }
 }
 
 @media (max-width: 800px) {

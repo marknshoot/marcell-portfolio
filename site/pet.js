@@ -10,10 +10,11 @@
 
   const BASE = "assets/pet/";
   const walk = ["walk0.png", "walk1.png", "walk2.png", "walk1.png"].map((n) => BASE + n);
+  const carry = ["carry0.png", "carry1.png"].map((n) => BASE + n);
   const idle = BASE + "idle.png";
   const blink = BASE + "blink.png";
   const waveSrc = BASE + "wave.png";
-  [idle, blink, waveSrc, BASE + "walk0.png", BASE + "walk1.png", BASE + "walk2.png"].forEach((src) => {
+  [...walk, ...carry, idle, blink, waveSrc].forEach((src) => {
     const pre = new Image();
     pre.src = src;
   });
@@ -30,8 +31,11 @@
   const lang = () => document.documentElement.dataset.lang || "en";
   const LINES = {
     en: {
-      hi: "Hai — click me.",
+      hi: "Hai — click or drag me.",
       wave: "Hai! I walk down here.",
+      grab: "Hey — I'm not a file.",
+      drag: ["Airborne!", "This is not an internship task.", "Watch the glasses.", "Put me near Projects."],
+      drop: "Okay. I can walk from here.",
       hero: "That's the real me up there.",
       projects: "Three projects. Credit-risk is the finished one.",
       skills: "Python, SQL, FastAPI — day one.",
@@ -40,8 +44,11 @@
       idle: ["Available now.", "EN / ID up top.", "No fake metrics.", "Hire the human, not the chibi."],
     },
     id: {
-      hi: "Hai — klik aku.",
+      hi: "Hai — klik atau tarik aku.",
       wave: "Hai! Aku jalan di sini.",
+      grab: "Hei — aku bukan file.",
+      drag: ["Melayang!", "Ini bukan tugas magang.", "Hati-hati kacamatanya.", "Taruh dekat Proyek."],
+      drop: "Oke. Aku jalan dari sini.",
       hero: "Yang besar di atas itu aku.",
       projects: "Tiga proyek. Credit-risk yang selesai.",
       skills: "Python, SQL, FastAPI — hari pertama.",
@@ -52,6 +59,9 @@
   };
 
   let sayTimer = 0;
+  function pack() {
+    return LINES[lang()] || LINES.en;
+  }
   function say(text, ms = 2800) {
     bubble.textContent = text;
     bubble.classList.add("on");
@@ -60,28 +70,41 @@
   }
 
   const size = () => el.getBoundingClientRect().width || 120;
+  const minX = 8;
+  const minY = 56;
+  const maxX = () => Math.max(minX + 40, window.innerWidth - size() - 8);
+  const maxY = () => Math.max(minY + 40, window.innerHeight - size() - 8);
+
   let x = 16;
+  let y = maxY();
   let dir = 1;
   let mode = "walk";
   let frame = 0;
   let frameAcc = 0;
   let t = 0;
-  const minX = 8;
-  const maxX = () => Math.max(minX + 80, window.innerWidth - size() - 16);
   let target = Math.min(280, maxX());
   let waveUntil = 0;
   let nextBlink = 2000;
   let nextIdleLine = 9000;
   let shownSection = "";
-
-  function pack() {
-    const L = LINES[lang()] || LINES.en;
-    return L;
-  }
+  let dragging = false;
+  let dragMoved = false;
+  let dragOffX = 0;
+  let dragOffY = 0;
+  let lastDragSay = 0;
+  let dragLine = 0;
 
   function place() {
     el.style.left = `${Math.round(x)}px`;
-    img.style.transform = dir < 0 ? "scaleX(-1)" : "none";
+    el.style.top = `${Math.round(y)}px`;
+    el.style.bottom = "auto";
+    if (mode === "carry") img.style.transform = "none";
+    else img.style.transform = dir < 0 ? "scaleX(-1)" : "none";
+  }
+
+  function clamp() {
+    x = Math.max(minX, Math.min(maxX(), x));
+    y = Math.max(minY, Math.min(maxY(), y));
   }
 
   function startWalk(to) {
@@ -91,6 +114,7 @@
     frame = 0;
     frameAcc = 0;
     mode = "walk";
+    el.classList.remove("pet--drag");
   }
 
   function visibleSection() {
@@ -110,6 +134,26 @@
     const dt = Math.min(48, now - t);
     t = now;
     const L = pack();
+
+    if (dragging) {
+      mode = "carry";
+      el.classList.add("pet--drag");
+      frameAcc += dt;
+      if (frameAcc > 140) {
+        frameAcc = 0;
+        frame = (frame + 1) % carry.length;
+      }
+      img.src = carry[frame];
+      img.style.transform = "none";
+      if (now - lastDragSay > 1400) {
+        lastDragSay = now;
+        say(L.drag[dragLine % L.drag.length], 1500);
+        dragLine += 1;
+      }
+      place();
+      requestAnimationFrame(tick);
+      return;
+    }
 
     const sec = visibleSection();
     if (sec !== shownSection && mode !== "wave") {
@@ -138,7 +182,6 @@
         img.src = walk[frame];
         img.setAttribute("data-f", walk[frame]);
       }
-      place();
     } else {
       if (now > nextBlink && now < nextBlink + 180) img.src = blink;
       else {
@@ -147,20 +190,53 @@
         if (now > nextBlink + 180) nextBlink = now + 2000 + Math.random() * 2500;
       }
       if (now > nextIdleLine) {
-        const pool = L.idle;
-        say(pool[Math.floor(Math.random() * pool.length)]);
+        say(L.idle[Math.floor(Math.random() * L.idle.length)]);
         startWalk(dir > 0 ? minX : maxX());
       }
-      place();
     }
+    place();
     requestAnimationFrame(tick);
   }
 
-  el.addEventListener("click", (e) => {
+  el.addEventListener("pointerdown", (e) => {
     if (e.target === xbtn) return;
-    mode = "wave";
-    waveUntil = performance.now() + 1400;
-    say(pack().wave);
+    e.preventDefault();
+    dragging = true;
+    dragMoved = false;
+    const r = el.getBoundingClientRect();
+    dragOffX = e.clientX - r.left;
+    dragOffY = e.clientY - r.top;
+    el.setPointerCapture(e.pointerId);
+    el.classList.add("pet--drag");
+    frame = 0;
+    lastDragSay = 0;
+    say(pack().grab, 1600);
+  });
+
+  el.addEventListener("pointermove", (e) => {
+    if (!dragging) return;
+    const nx = e.clientX - dragOffX;
+    const ny = e.clientY - dragOffY;
+    if (Math.abs(nx - x) + Math.abs(ny - y) > 6) dragMoved = true;
+    x = nx;
+    y = ny;
+    clamp();
+  });
+
+  el.addEventListener("pointerup", (e) => {
+    if (!dragging) return;
+    dragging = false;
+    el.releasePointerCapture(e.pointerId);
+    el.classList.remove("pet--drag");
+    clamp();
+    if (!dragMoved) {
+      mode = "wave";
+      waveUntil = performance.now() + 1400;
+      say(pack().wave);
+    } else {
+      say(pack().drop);
+      startWalk(dir > 0 ? maxX() : minX());
+    }
   });
 
   xbtn.addEventListener("click", (e) => {
@@ -169,6 +245,11 @@
     try {
       localStorage.setItem("hide-pet", "1");
     } catch (_) {}
+  });
+
+  window.addEventListener("resize", () => {
+    clamp();
+    place();
   });
 
   say(pack().hi, 3500);
