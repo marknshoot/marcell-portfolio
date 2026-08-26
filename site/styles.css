@@ -1262,6 +1262,13 @@ html.book-ok .plays > .playboard {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .pet--drag .pet-img,
+  .close-chibi.is-waving {
+    animation: none;
+  }
+}
+
 .foot {
   display: flex;
   flex-wrap: wrap;

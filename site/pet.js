@@ -6,7 +6,7 @@
     const io = new IntersectionObserver(
       (entries) => {
         const on = entries.some((e) => e.isIntersecting && e.intersectionRatio >= 0.28);
-        closeChibi.classList.toggle("is-waving", on && !reduce);
+        closeChibi.classList.toggle("is-waving", on);
       },
       { threshold: [0.28, 0.5] }
     );
@@ -289,9 +289,16 @@
       say(pack().wave);
       return;
     }
-    if (reduce || y >= maxY() - 1) {
+    if (y >= maxY() - 1) {
       say(pack().drop);
       startWalk(dir > 0 ? maxX() : minX());
+      return;
+    }
+    if (reduce) {
+      y = maxY();
+      say(pack().drop);
+      startWalk(dir > 0 ? maxX() : minX());
+      place();
       return;
     }
     mode = "fall";
