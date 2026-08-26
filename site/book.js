@@ -32,10 +32,12 @@ import { initBook } from "./book3d.js";
   const LAST = SHUT;
   const BAR = 64;
   const html = document.documentElement;
+  const body = document.body;
 
   let step = OPEN;
   let busy = false;
   let page = 0;
+  let frozen = false;
 
   function paintTabs() {
     tabs.forEach((btn, i) => {
@@ -63,6 +65,32 @@ import { initBook } from "./book3d.js";
     }, ms);
   }
 
+  function capY() {
+    return Math.max(0, window.scrollY + sticky.getBoundingClientRect().top - BAR);
+  }
+
+  function atCap() {
+    return sticky.getBoundingClientRect().top <= BAR + 18;
+  }
+
+  function holding() {
+    return step < LAST;
+  }
+
+  function freeze() {
+    if (frozen) return;
+    frozen = true;
+    html.classList.add("book-frozen");
+    body.classList.add("book-frozen");
+  }
+
+  function unfreeze() {
+    if (!frozen) return;
+    frozen = false;
+    html.classList.remove("book-frozen");
+    body.classList.remove("book-frozen");
+  }
+
   function applyStep(next, animate) {
     step = next;
     if (step === OPEN || step === SHUT) {
@@ -77,34 +105,18 @@ import { initBook } from "./book3d.js";
     }
     if (book3d) book3d.setStep(step);
     paintTabs();
-    holdClass();
+    html.classList.toggle("book-hold", holding());
+    if (step >= LAST) unfreeze();
     cooldown(animate ? 860 : 0);
   }
 
-  function capY() {
-    return Math.max(0, window.scrollY + sticky.getBoundingClientRect().top - BAR);
-  }
-
-  function atCap() {
-    return sticky.getBoundingClientRect().top <= BAR + 18;
-  }
-
-  function holding() {
-    return step < LAST;
-  }
-
-  function holdClass() {
-    html.classList.toggle("book-hold", holding());
-  }
-
-  function clamp() {
-    const r = sticky.getBoundingClientRect();
-    if (r.top > window.innerHeight - 24 && step !== OPEN) applyStep(OPEN, false);
-    if (!holding()) return;
+  function stopDown(e) {
+    e.preventDefault();
+    const scroller = document.scrollingElement || html;
+    const y = scroller.scrollTop;
     const max = capY();
-    if (window.scrollY > max + 1) {
-      window.scrollTo({ top: max, left: 0, behavior: "auto" });
-    }
+    if (y < max - 1) scroller.scrollTop = max;
+    freeze();
   }
 
   function advance(dir) {
@@ -116,29 +128,25 @@ import { initBook } from "./book3d.js";
 
   function onWheel(e) {
     const dy = e.deltaY;
-    if (Math.abs(dy) < 8) {
-      if (holding() && atCap() && dy > 0) e.preventDefault();
-      return;
-    }
     const dir = dy > 0 ? 1 : -1;
 
     if (dir > 0 && holding()) {
       const remain = capY() - window.scrollY;
-      if (remain <= 96) {
-        e.preventDefault();
-        if (remain > 18) {
-          window.scrollTo({ top: capY(), left: 0, behavior: "auto" });
-          return;
-        }
-        advance(1);
-        return;
+      if (frozen || atCap() || remain <= Math.max(24, Math.abs(dy))) {
+        const already = frozen || atCap() || remain <= 24;
+        stopDown(e);
+        if (already && Math.abs(dy) >= 8) advance(1);
       }
+      return;
     }
 
-    if (dir < 0 && atCap() && step > OPEN) {
+    if (dir < 0 && (frozen || atCap()) && step > OPEN) {
       e.preventDefault();
-      advance(-1);
+      if (Math.abs(dy) >= 8) advance(-1);
+      return;
     }
+
+    if (dir < 0 && frozen && step === OPEN) unfreeze();
   }
 
   let touchY = null;
@@ -151,45 +159,52 @@ import { initBook } from "./book3d.js";
     const dir = dy > 0 ? 1 : -1;
 
     if (dir > 0 && holding()) {
-      if (atCap()) {
-        e.preventDefault();
+      const remain = capY() - window.scrollY;
+      if (frozen || atCap() || remain <= Math.max(28, Math.abs(dy))) {
+        stopDown(e);
         if (Math.abs(dy) >= 24) {
           touchY = e.touches[0].clientY;
           advance(1);
         }
-        return;
-      }
-      const max = capY();
-      if (window.scrollY >= max - 2) {
-        e.preventDefault();
-        window.scrollTo({ top: max, left: 0, behavior: "auto" });
       }
       return;
     }
 
-    if (dir < 0 && atCap() && step > OPEN) {
+    if (dir < 0 && (frozen || atCap()) && step > OPEN) {
       e.preventDefault();
       if (Math.abs(dy) >= 24) {
         touchY = e.touches[0].clientY;
         advance(-1);
       }
+      return;
     }
+
+    if (dir < 0 && frozen && step === OPEN) unfreeze();
   }
 
   function onKey(e) {
     const down = e.key === "ArrowDown" || e.key === "PageDown" || e.key === " ";
     const up = e.key === "ArrowUp" || e.key === "PageUp";
     if (!down && !up) return;
-    if (down && holding() && (atCap() || capY() - window.scrollY < 48)) {
-      e.preventDefault();
-      if (!atCap()) window.scrollTo({ top: capY(), left: 0, behavior: "auto" });
-      else advance(1);
+
+    if (down && holding() && (frozen || atCap() || capY() - window.scrollY < 64)) {
+      stopDown(e);
+      advance(1);
       return;
     }
-    if (up && atCap() && step > OPEN) {
+    if (up && (frozen || atCap()) && step > OPEN) {
       e.preventDefault();
       advance(-1);
+      return;
     }
+    if (up && frozen && step === OPEN) unfreeze();
+  }
+
+  function onScroll() {
+    if (frozen) return;
+    const r = sticky.getBoundingClientRect();
+    if (r.top > window.innerHeight - 24 && step !== OPEN) applyStep(OPEN, false);
+    if (holding() && r.top <= BAR + 18) freeze();
   }
 
   tabs.forEach((btn) => {
@@ -201,11 +216,19 @@ import { initBook } from "./book3d.js";
     });
   });
 
+  document.querySelectorAll(".bar a[href^='#']").forEach((a) => {
+    a.addEventListener("click", () => {
+      if (a.getAttribute("href") === "#projects") return;
+      unfreeze();
+      if (holding()) applyStep(SHUT, false);
+    });
+  });
+
   window.addEventListener("wheel", onWheel, { passive: false, capture: true });
   window.addEventListener("touchstart", onTouchStart, { passive: true, capture: true });
   window.addEventListener("touchmove", onTouchMove, { passive: false, capture: true });
   window.addEventListener("keydown", onKey, { capture: true });
-  window.addEventListener("scroll", clamp, { passive: true });
+  window.addEventListener("scroll", onScroll, { passive: true });
 
   const params = new URLSearchParams(location.search);
   const rawBook = params.get("book");
