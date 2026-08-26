@@ -352,9 +352,13 @@ a:focus-visible,
   padding: 72px 0;
 }
 
+#projects {
+  scroll-margin-top: calc(var(--bar) + 8px);
+}
+
 .plays-head {
   max-width: 52ch;
-  margin-bottom: 32px;
+  margin-bottom: 16px;
 }
 
 .head-star {
@@ -389,7 +393,7 @@ html.book-ok .plays > .playboard {
 }
 
 .folio-spacer {
-  height: 90vh;
+  height: 36vh;
 }
 
 .book-chapters {
@@ -426,27 +430,30 @@ html.book-ok .plays > .playboard {
 
 .book {
   position: relative;
-  height: 580px;
+  height: 520px;
   overflow: visible;
-  perspective: 1600px;
-  perspective-origin: 50% 0%;
+  perspective: 1800px;
+  perspective-origin: 50% 28%;
 }
 
 .book-shadow {
   position: absolute;
-  left: 6%;
-  right: 4%;
-  bottom: 4px;
-  height: 48px;
-  background: radial-gradient(ellipse at center, rgba(18, 24, 38, 0.4), transparent 70%);
+  left: 12%;
+  right: 12%;
+  bottom: 28px;
+  height: 40px;
+  background: radial-gradient(ellipse at center, rgba(18, 24, 38, 0.34), transparent 72%);
   pointer-events: none;
 }
 
 .dict {
   position: absolute;
-  inset: 88px 0 20px;
-  transform: rotateX(72deg) rotateZ(-8deg);
-  transform-origin: 50% 82%;
+  left: 8%;
+  right: 8%;
+  top: 36px;
+  height: 340px;
+  transform: rotateX(46deg);
+  transform-origin: 50% 70%;
   transform-style: preserve-3d;
 }
 
@@ -456,6 +463,12 @@ html.book-ok .plays > .playboard {
   width: 47%;
   height: 100%;
   transform-style: preserve-3d;
+}
+
+.board-l,
+.board-r,
+.dict {
+  transition: transform 0.78s cubic-bezier(0.22, 0.7, 0.2, 1);
 }
 
 .board-l {
@@ -470,6 +483,61 @@ html.book-ok .plays > .playboard {
   transform: rotateY(-30deg) translateZ(1px);
 }
 
+.book.is-shut .dict {
+  left: 18%;
+  right: 18%;
+  top: 36px;
+  height: 320px;
+  transform: rotateX(36deg);
+  transform-origin: 50% 50%;
+}
+
+.book.is-shut .board-l {
+  width: 100%;
+  left: 0;
+  transform: rotateY(0);
+}
+
+.book.is-shut .board-r {
+  width: 100%;
+  right: 0;
+  transform: rotateY(-180deg);
+  opacity: 0;
+}
+
+.book.is-shut .board-outer {
+  transform: none;
+}
+
+.book.is-shut .board-inner {
+  transform: rotateY(180deg);
+}
+
+.book.is-shut .foil-cover {
+  display: block;
+  top: 36%;
+  font-size: clamp(0.75rem, 1.5vw, 1rem);
+}
+
+.book.is-shut .foil-small {
+  display: block;
+}
+
+.book.is-shut .spine {
+  left: -18px;
+  right: auto;
+  width: 20px;
+}
+
+.book.is-shut .leaf {
+  display: none;
+}
+
+.holo-beam,
+.book-hover {
+  transition: opacity 0.4s ease;
+}
+
 .board-outer,
 .board-inner {
   position: absolute;
@@ -478,10 +546,17 @@ html.book-ok .plays > .playboard {
   backface-visibility: hidden;
 }
 
+.board-inner {
+  background:
+    linear-gradient(90deg, rgba(18, 24, 38, 0.14), transparent 20%),
+    #efe6d4;
+}
+
 .board-outer {
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.16), transparent 38%, rgba(0, 0, 0, 0.38)),
     url("assets/book/leather.jpg") center / cover;
+  transform: rotateY(180deg);
   box-shadow:
     8px 18px 28px rgba(18, 24, 38, 0.28),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
@@ -493,11 +568,10 @@ html.book-ok .plays > .playboard {
     url("assets/book/leather.jpg") center / cover;
 }
 
-.board-inner {
+.board-r .board-inner {
   background:
-    linear-gradient(90deg, rgba(18, 24, 38, 0.12), transparent 18%),
+    linear-gradient(270deg, rgba(18, 24, 38, 0.14), transparent 20%),
     #efe6d4;
-  transform: rotateY(180deg);
 }
 
 .foil {
@@ -509,12 +583,7 @@ html.book-ok .plays > .playboard {
 }
 
 .foil-cover {
-  position: absolute;
-  left: 12%;
-  right: 12%;
-  top: 38%;
-  font-size: clamp(0.7rem, 1.4vw, 0.95rem);
-  text-align: center;
+  display: none;
 }
 
 .foil-small {
@@ -578,19 +647,19 @@ html.book-ok .plays > .playboard {
 
 .leaf {
   position: absolute;
-  top: 5%;
-  left: 4%;
-  width: 44%;
-  height: 90%;
+  top: 6%;
+  left: 8%;
+  width: 39%;
+  height: 84%;
   transform-origin: 100% 50%;
   transform-style: preserve-3d;
-  transform: rotateY(28deg);
+  transform: rotateY(30deg);
   transition: transform 0.52s cubic-bezier(0.2, 0.7, 0.15, 1);
   z-index: 5;
 }
 
 .leaf.is-turned {
-  transform: rotateY(-28deg);
+  transform: rotateY(-30deg);
 }
 
 .leaf .face {
@@ -664,10 +733,10 @@ html.book-ok .plays > .playboard {
 .holo-beam {
   position: absolute;
   left: 50%;
-  bottom: 22%;
+  bottom: 34%;
   z-index: 5;
-  width: min(280px, 54%);
-  height: 42%;
+  width: min(240px, 46%);
+  height: 36%;
   transform: translateX(-50%);
   pointer-events: none;
   background: linear-gradient(
@@ -676,7 +745,7 @@ html.book-ok .plays > .playboard {
     rgba(243, 239, 230, 0.05)
   );
   clip-path: polygon(36% 100%, 64% 100%, 100% 0, 0 0);
-  opacity: 0.55;
+  opacity: 0.5;
   filter: blur(0.4px);
 }
 
@@ -687,9 +756,9 @@ html.book-ok .plays > .playboard {
 .book-hover {
   position: absolute;
   left: 50%;
-  top: 28px;
+  top: 18px;
   z-index: 6;
-  width: min(400px, 68%);
+  width: min(360px, 56%);
   transform: translate(-50%, 0);
   pointer-events: none;
 }
@@ -1318,12 +1387,15 @@ html.book-ok .plays > .playboard {
   }
 
   .book {
-    height: 520px;
+    height: 460px;
   }
 
   .dict {
-    inset: 100px 0 12px;
-    transform: rotateX(68deg) rotateZ(-6deg);
+    left: 2%;
+    right: 2%;
+    top: 48px;
+    height: 280px;
+    transform: rotateX(44deg);
   }
 
   .foil-cover {
