@@ -40,7 +40,7 @@
       "close.ctaEmail": "Email untuk magang",
       "close.ctaGithub": "Lihat GitHub",
       "footer.tag": "Intern AI Engineer",
-      "pet.tip": "Versi mini. Klik untuk wave.",
+      "pet.tip": "Klik untuk wave.",
     },
   };
 

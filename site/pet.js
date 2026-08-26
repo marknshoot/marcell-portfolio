@@ -8,67 +8,148 @@
     }
   } catch (_) {}
 
-  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const BASE = "assets/pet/";
-  const walk = ["walk0.png", "walk1.png", "walk2.png", "walk3.png"].map((n) => BASE + n);
+  const walk = ["walk0.png", "walk1.png", "walk2.png", "walk1.png"].map((n) => BASE + n);
   const idle = BASE + "idle.png";
   const blink = BASE + "blink.png";
   const waveSrc = BASE + "wave.png";
-  [idle, blink, waveSrc, ...walk].forEach((src) => {
+  [idle, blink, waveSrc, BASE + "walk0.png", BASE + "walk1.png", BASE + "walk2.png"].forEach((src) => {
     const pre = new Image();
     pre.src = src;
   });
 
   const img = el.querySelector(".pet-img");
   const xbtn = el.querySelector(".pet-x");
-  const size = el.getBoundingClientRect().width || 120;
+  let bubble = el.querySelector(".pet-say");
+  if (!bubble) {
+    bubble = document.createElement("span");
+    bubble.className = "pet-say";
+    el.insertBefore(bubble, img);
+  }
+
+  const lang = () => document.documentElement.dataset.lang || "en";
+  const LINES = {
+    en: {
+      hi: "Hai — click me.",
+      wave: "Hai! I walk down here.",
+      hero: "That's the real me up there.",
+      projects: "Three projects. Credit-risk is the finished one.",
+      skills: "Python, SQL, FastAPI — day one.",
+      about: "Short version: I ship things that run.",
+      close: "Email is the move.",
+      idle: ["Available now.", "EN / ID up top.", "No fake metrics.", "Hire the human, not the chibi."],
+    },
+    id: {
+      hi: "Hai — klik aku.",
+      wave: "Hai! Aku jalan di sini.",
+      hero: "Yang besar di atas itu aku.",
+      projects: "Tiga proyek. Credit-risk yang selesai.",
+      skills: "Python, SQL, FastAPI — hari pertama.",
+      about: "Intinya: yang kukerjakan harus jalan.",
+      close: "Email itu tombol utamanya.",
+      idle: ["Siap mulai sekarang.", "EN / ID di atas.", "Tidak ada angka palsu.", "Yang dilamar manusia, bukan chibi."],
+    },
+  };
+
+  let sayTimer = 0;
+  function say(text, ms = 2800) {
+    bubble.textContent = text;
+    bubble.classList.add("on");
+    clearTimeout(sayTimer);
+    sayTimer = setTimeout(() => bubble.classList.remove("on"), ms);
+  }
+
+  const size = () => el.getBoundingClientRect().width || 120;
   let x = 16;
   let dir = 1;
-  let mode = "idle";
-  let walkI = 0;
+  let mode = "walk";
+  let frame = 0;
+  let frameAcc = 0;
   let t = 0;
   const minX = 8;
-  const maxX = () => Math.max(minX, window.innerWidth - size - 16);
-  let target = 160;
+  const maxX = () => Math.max(minX + 80, window.innerWidth - size() - 16);
+  let target = Math.min(280, maxX());
   let waveUntil = 0;
-  let nextBlink = 1800;
-  let nextWalk = 2500;
+  let nextBlink = 2000;
+  let nextIdleLine = 9000;
+  let shownSection = "";
+
+  function pack() {
+    const L = LINES[lang()] || LINES.en;
+    return L;
+  }
 
   function place() {
     el.style.left = `${Math.round(x)}px`;
     img.style.transform = dir < 0 ? "scaleX(-1)" : "none";
   }
 
+  function startWalk(to) {
+    target = Math.max(minX, Math.min(maxX(), to));
+    if (Math.abs(target - x) < 40) target = dir > 0 ? minX : maxX();
+    dir = target >= x ? 1 : -1;
+    frame = 0;
+    frameAcc = 0;
+    mode = "walk";
+  }
+
+  function visibleSection() {
+    const ids = ["close", "about", "skills", "projects", "top"];
+    const mid = window.innerHeight * 0.4;
+    for (const id of ids) {
+      const node = document.getElementById(id);
+      if (!node) continue;
+      const r = node.getBoundingClientRect();
+      if (r.top < mid && r.bottom > 80) return id === "top" ? "hero" : id;
+    }
+    return "hero";
+  }
+
   function tick(now) {
     if (!t) t = now;
-    const dt = Math.min(40, now - t);
+    const dt = Math.min(48, now - t);
     t = now;
+    const L = pack();
+
+    const sec = visibleSection();
+    if (sec !== shownSection && mode !== "wave") {
+      shownSection = sec;
+      const map = { hero: L.hero, projects: L.projects, skills: L.skills, about: L.about, close: L.close };
+      if (map[sec]) say(map[sec], 3200);
+    }
 
     if (mode === "wave") {
       img.src = waveSrc;
       img.style.transform = "none";
-      if (now > waveUntil) mode = "idle";
-    } else if (mode === "walk" && !reduce) {
-      x += dir * 0.07 * dt;
+      if (now > waveUntil) startWalk(dir > 0 ? maxX() : minX());
+    } else if (mode === "walk") {
+      x += dir * 0.12 * dt;
       if ((dir > 0 && x >= target) || (dir < 0 && x <= target)) {
         x = target;
         mode = "idle";
-        nextWalk = now + 3000 + Math.random() * 4000;
+        nextIdleLine = now + 5000;
       }
-      walkI += dt;
-      img.src = walk[Math.floor(walkI / 140) % walk.length];
+      frameAcc += dt;
+      if (frameAcc > 120) {
+        frameAcc = 0;
+        frame = (frame + 1) % walk.length;
+      }
+      if (img.getAttribute("data-f") !== walk[frame]) {
+        img.src = walk[frame];
+        img.setAttribute("data-f", walk[frame]);
+      }
       place();
     } else {
       if (now > nextBlink && now < nextBlink + 180) img.src = blink;
       else {
         img.src = idle;
-        if (now > nextBlink + 180) nextBlink = now + 2200 + Math.random() * 3000;
+        img.removeAttribute("data-f");
+        if (now > nextBlink + 180) nextBlink = now + 2000 + Math.random() * 2500;
       }
-      if (!reduce && now > nextWalk) {
-        target = minX + Math.random() * (maxX() - minX);
-        dir = target >= x ? 1 : -1;
-        walkI = 0;
-        mode = "walk";
+      if (now > nextIdleLine) {
+        const pool = L.idle;
+        say(pool[Math.floor(Math.random() * pool.length)]);
+        startWalk(dir > 0 ? minX : maxX());
       }
       place();
     }
@@ -79,7 +160,7 @@
     if (e.target === xbtn) return;
     mode = "wave";
     waveUntil = performance.now() + 1400;
-    nextWalk = waveUntil + 2500;
+    say(pack().wave);
   });
 
   xbtn.addEventListener("click", (e) => {
@@ -90,6 +171,8 @@
     } catch (_) {}
   });
 
+  say(pack().hi, 3500);
+  startWalk(Math.min(320, maxX()));
   place();
   requestAnimationFrame(tick);
 })();

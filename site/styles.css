@@ -759,16 +759,29 @@ a:focus-visible,
 }
 
 .pet-tip {
-  display: block;
-  font-size: 0.65rem;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-  text-align: center;
-  opacity: 0;
+  display: none;
 }
 
-.pet:hover .pet-tip {
-  opacity: 1;
+.pet-say {
+  display: none;
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translate(-50%, -6px);
+  min-width: 140px;
+  max-width: 200px;
+  padding: 8px 10px;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--accent);
+  font-size: 0.72rem;
+  line-height: 1.35;
+  text-align: center;
+  box-shadow: 3px 3px 0 var(--accent);
+}
+
+.pet-say.on {
+  display: block;
 }
 
 @media (max-width: 800px) {
