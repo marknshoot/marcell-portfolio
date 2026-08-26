@@ -185,9 +185,22 @@ export function initBook(canvas) {
   let delayedPage = 0;
   let targetPage = 0;
   let last = performance.now();
+  let turnToken = 0;
+  let onTurnDone = null;
 
-  function stepTowardTarget() {
-    if (delayedPage === targetPage) return;
+  function finishTurn(token) {
+    if (token !== turnToken) return;
+    const cb = onTurnDone;
+    onTurnDone = null;
+    if (cb) cb();
+  }
+
+  function stepTowardTarget(token) {
+    if (token !== turnToken) return;
+    if (delayedPage === targetPage) {
+      window.setTimeout(() => finishTurn(token), 420);
+      return;
+    }
     delayedPage += targetPage > delayedPage ? 1 : -1;
     pages.forEach((p, i) => {
       if (p.opened !== delayedPage > i) {
@@ -196,14 +209,19 @@ export function initBook(canvas) {
         p.opened = delayedPage > i;
       }
     });
-    if (delayedPage !== targetPage) window.setTimeout(stepTowardTarget, 140);
+    window.setTimeout(() => stepTowardTarget(token), 140);
   }
 
-  function setPage(next) {
+  function setPage(next, done) {
     next = Math.max(0, Math.min(PAGE_COUNT, next));
-    if (next === targetPage) return;
+    onTurnDone = done || null;
+    const token = ++turnToken;
+    if (next === targetPage && delayedPage === targetPage) {
+      finishTurn(token);
+      return;
+    }
     targetPage = next;
-    stepTowardTarget();
+    stepTowardTarget(token);
   }
 
   function resize() {
@@ -268,8 +286,8 @@ export function initBook(canvas) {
   const STEP_PAGES = [0, 2, 4, 6, PAGE_COUNT];
 
   return {
-    setStep(step) {
-      setPage(STEP_PAGES[step] ?? 0);
+    setStep(step, done) {
+      setPage(STEP_PAGES[step] ?? 0, done);
     },
   };
 }
