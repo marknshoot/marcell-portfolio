@@ -372,6 +372,225 @@ a:focus-visible,
   color: var(--muted);
 }
 
+.folio {
+  display: none;
+}
+
+html.book-ok .folio {
+  display: block;
+}
+
+html.book-ok .plays > .playboard {
+  display: none;
+}
+
+.folio-sticky {
+  position: sticky;
+  top: var(--bar);
+  z-index: 3;
+  padding: 4px 0 16px;
+  background: var(--bg);
+}
+
+.folio-spacer {
+  height: 8px;
+}
+
+.book-chapters {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 4px;
+}
+
+.book-chapters button {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: 8px 10px;
+  font: inherit;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.book-chapters button span {
+  font-size: 0.75rem;
+  margin-right: 4px;
+}
+
+.book-chapters button[aria-current="true"] {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+
+.book {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(900px, 100%);
+  margin: 0 auto;
+  max-height: calc(100svh - var(--bar) - 10.5rem);
+}
+
+#book-canvas {
+  width: 100%;
+  height: min(280px, 32svh);
+  max-height: 32svh;
+  min-height: 160px;
+  display: block;
+  order: 4;
+  margin-top: auto;
+  flex: 1 1 auto;
+}
+
+.holo-beam,
+.holo-source,
+.book-hover {
+  transition: opacity 0.35s ease;
+}
+
+.holo-beam {
+  order: 2;
+  flex: none;
+  width: min(220px, 48%);
+  height: 64px;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--accent) 28%, transparent),
+    color-mix(in srgb, var(--accent) 8%, transparent)
+  );
+  clip-path: polygon(8% 0, 92% 0, 56% 100%, 44% 100%);
+  filter: blur(0.3px);
+}
+
+.holo-source {
+  order: 3;
+  flex: none;
+  display: block;
+  width: 18px;
+  height: 18px;
+  margin: -6px 0 -8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #f3efe6 0%, color-mix(in srgb, var(--accent) 55%, transparent) 55%, transparent 70%);
+  pointer-events: none;
+}
+
+.book.is-turning .holo-beam,
+.book.is-turning .holo-source {
+  opacity: 0.15;
+}
+
+.book-hover {
+  order: 1;
+  position: relative;
+  display: grid;
+  width: min(400px, 92%);
+  max-height: min(260px, 30svh);
+  overflow: hidden;
+  pointer-events: none;
+  flex: none;
+}
+
+.book-float {
+  grid-area: 1 / 1;
+  position: relative;
+  padding: 18px 20px 16px;
+  color: var(--accent-ink);
+  background: color-mix(in srgb, var(--accent) 78%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-ink) 35%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent),
+    0 16px 40px rgba(18, 24, 38, 0.28),
+    0 0 28px color-mix(in srgb, var(--accent) 35%, transparent);
+  backdrop-filter: blur(7px);
+  overflow: hidden;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.book-float::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0 3px,
+    rgba(243, 239, 230, 0.05) 3px 4px
+  );
+  animation: holo-scan 5s linear infinite;
+}
+
+.book-float.is-on {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  animation: holo-rise 320ms ease-out;
+}
+
+.book.is-shut .book-float,
+.book.is-turning .book-float.is-on {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  animation: none;
+}
+
+@keyframes holo-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes holo-scan {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 28px;
+  }
+}
+
+.book-float h3 {
+  margin-top: 8px;
+}
+
+.book-float .tag {
+  margin-top: 0;
+  color: inherit;
+  border-color: color-mix(in srgb, var(--accent-ink) 45%, transparent);
+}
+
+.book-float .stack {
+  color: color-mix(in srgb, var(--accent-ink) 78%, transparent);
+}
+
+.folio-hint {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 .playboard {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -943,6 +1162,24 @@ a:focus-visible,
   .jacket,
   .file {
     padding: 52px 0;
+  }
+
+  #book-canvas {
+    height: min(220px, 28svh);
+    max-height: 28svh;
+  }
+
+  .folio-spacer {
+    height: 8px;
+  }
+
+  .holo-beam {
+    height: 48px;
+  }
+
+  .book-chapters button {
+    font-size: 0.82rem;
+    padding: 8px 8px;
   }
 
   .pet,
