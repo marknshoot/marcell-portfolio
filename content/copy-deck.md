@@ -89,6 +89,11 @@ ID: Binus University · Data Science · Semester 5 · Perkiraan lulus 2028
 
 Same two buttons as the hero (email + GitHub). No resume button.
 
+Chibi wave + speech bubble (mailto, same inbox):
+
+**EN:** Hai. Email me about internships.  
+**ID:** Hai. Email untuk magang.
+
 ## Footer
 
 Marcell Hermawan Kristianto · AI Engineer intern  

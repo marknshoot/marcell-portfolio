@@ -41,6 +41,7 @@
       "close.title": "Kalau ada kursi magang di tim AI, data science, atau data engineering, email saya.",
       "close.ctaEmail": "Email untuk magang",
       "close.ctaGithub": "Lihat GitHub",
+      "close.bubble": "Hai. Email untuk magang.",
       "footer.tag": "Intern AI Engineer",
       "pet.tip": "Klik untuk wave.",
     },

@@ -1,4 +1,18 @@
 (() => {
+  const closeHost = document.getElementById("close");
+  const closeChibi = document.querySelector(".close-chibi");
+  if (closeHost && closeChibi) {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const io = new IntersectionObserver(
+      (entries) => {
+        const on = entries.some((e) => e.isIntersecting && e.intersectionRatio >= 0.28);
+        closeChibi.classList.toggle("is-waving", on && !reduce);
+      },
+      { threshold: [0.28, 0.5] }
+    );
+    io.observe(closeHost);
+  }
+
   const el = document.getElementById("pet");
   if (!el) return;
   try {
@@ -156,10 +170,11 @@
     }
 
     const sec = visibleSection();
+    el.classList.toggle("pet--away", sec === "close");
     if (sec !== shownSection && mode !== "wave") {
       shownSection = sec;
       const map = { hero: L.hero, projects: L.projects, skills: L.skills, about: L.about, close: L.close };
-      if (map[sec]) say(map[sec], 3200);
+      if (map[sec] && sec !== "close") say(map[sec], 3200);
     }
 
     if (mode === "wave") {
