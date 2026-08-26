@@ -116,27 +116,30 @@ export function initBook(canvas) {
   renderer.shadowMap.enabled = true;
 
   const scene = new Scene();
-  const camera = new PerspectiveCamera(40, 1, 0.1, 40);
-  camera.position.set(0, 1.15, 2.85);
-  camera.lookAt(0, 0, 0);
+  const camera = new PerspectiveCamera(35, 1, 0.1, 40);
+  const elev = Math.PI / 6;
+  const dist = 3.35;
+  camera.position.set(0, dist * Math.sin(elev), dist * Math.cos(elev));
+  camera.lookAt(0, 0.02, 0);
 
   const hemi = new HemisphereLight("#fffaf3", "#8a8070", 1.1);
   scene.add(hemi);
   const dir = new DirectionalLight("#fff6ea", 2.2);
-  dir.position.set(2.2, 5, 2.4);
+  dir.position.set(1.6, 3.4, 2.2);
   dir.castShadow = true;
   dir.shadow.mapSize.set(1024, 1024);
   scene.add(dir);
 
   const ground = new Mesh(new PlaneGeometry(20, 20), new ShadowMaterial({ opacity: 0.22 }));
   ground.rotation.x = -Math.PI / 2;
-  ground.position.y = -1.15;
+  ground.position.y = -0.04;
   ground.receiveShadow = true;
   scene.add(ground);
 
   const book = new Group();
-  book.rotation.x = -Math.PI / 4;
+  book.rotation.x = -Math.PI / 2;
   book.rotation.y = -Math.PI / 2;
+  book.position.y = 0.02;
   scene.add(book);
 
   const paperMap = linedPaper();
