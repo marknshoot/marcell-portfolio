@@ -192,6 +192,8 @@ Write answers into `content/` as soon as a round is complete enough to be useful
 
 ## Recruiter QA (required before calling the site done)
 
+Run this list against **https://marcell-portfolio-psi.vercel.app/** after the deploy is live. Local `site/` preview is a draft check only.
+
 - [ ] 8-second test: who, role wanted, how to contact
 - [ ] Resume download works **or** no Resume control is rendered (v1: no PDF, no button)
 - [ ] `mailto:` or visible email works
@@ -203,6 +205,7 @@ Write answers into `content/` as soon as a round is complete enough to be useful
 - [ ] Favicon present
 - [ ] No lorem ipsum, no `TODO:` visible in the shipped page
 - [ ] No invented metrics
+- [ ] **Live Vercel:** HTML/CSS/JS/assets 200 on the production URL; hall copy, CTAs, parchment/ivy/crest, and the chibi avatar actually render on desktop and mobile. Do not mark a change done from localhost alone.
 
 ## Do not
 
