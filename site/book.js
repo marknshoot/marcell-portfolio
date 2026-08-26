@@ -1,4 +1,4 @@
-import { initBook } from "./book3d.js?v=turnlock";
+import { initBook } from "./book3d.js?v=hololock";
 
 (() => {
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -36,6 +36,8 @@ import { initBook } from "./book3d.js?v=turnlock";
   let busy = false;
   let page = 0;
   let acc = 0;
+  let blocked = false;
+  let quietTimer = 0;
 
   function paintTabs() {
     tabs.forEach((btn, i) => {
@@ -55,19 +57,36 @@ import { initBook } from "./book3d.js?v=turnlock";
   }
 
   function turning() {
-    return busy || (book3d && book3d.isBusy());
+    return busy || blocked || (book3d && book3d.isBusy());
   }
 
   function lockTurn() {
     busy = true;
+    blocked = true;
     acc = 0;
     book.classList.add("is-turning");
+    window.clearTimeout(quietTimer);
+  }
+
+  function openGate() {
+    blocked = true;
+    acc = 0;
+    window.clearTimeout(quietTimer);
+    quietTimer = window.setTimeout(() => {
+      blocked = false;
+      acc = 0;
+    }, 240);
+  }
+
+  function dropInput() {
+    acc = 0;
+    if (!busy) openGate();
   }
 
   function unlockTurn() {
     busy = false;
-    acc = 0;
     book.classList.remove("is-turning");
+    openGate();
   }
 
   function scroller() {
@@ -105,23 +124,34 @@ import { initBook } from "./book3d.js?v=turnlock";
   }
 
   function applyStep(next, animate) {
-    if (turning() && next !== step) return;
+    if (busy && next !== step) return;
+    if (book3d && book3d.isBusy() && next !== step) return;
     step = next;
-    if (step === OPEN || step === SHUT) {
-      book.classList.add("is-shut");
-      showFloat(false);
-      page = 0;
-    } else {
+    const showCard = step >= PAGE0 && step <= PAGE2;
+    if (showCard) {
       book.classList.remove("is-shut");
       page = step - PAGE0;
-      showFloat(false);
-      window.setTimeout(() => showFloat(true), animate === false ? 0 : 420);
+    } else {
+      book.classList.add("is-shut");
+      page = 0;
     }
+    showFloat(false);
     paintTabs();
     html.classList.toggle("book-hold", step !== OPEN && step !== SHUT);
     lockTurn();
-    if (book3d) book3d.setStep(step, unlockTurn);
-    else window.setTimeout(unlockTurn, animate === false ? 0 : 900);
+
+    function afterBook() {
+      book.classList.remove("is-turning");
+      if (!showCard) {
+        unlockTurn();
+        return;
+      }
+      showFloat(true);
+      window.setTimeout(unlockTurn, reduce ? 0 : 360);
+    }
+
+    if (book3d) book3d.setStep(step, afterBook);
+    else window.setTimeout(afterBook, animate === false ? 0 : 900);
     clamp();
   }
 
@@ -143,7 +173,7 @@ import { initBook } from "./book3d.js?v=turnlock";
       if (y >= max - 1) {
         e.preventDefault();
         if (turning()) {
-          acc = 0;
+          dropInput();
           return;
         }
         if (step < LAST) {
@@ -164,7 +194,7 @@ import { initBook } from "./book3d.js?v=turnlock";
       if (y <= min + 1) {
         e.preventDefault();
         if (turning()) {
-          acc = 0;
+          dropInput();
           return;
         }
         if (step > OPEN) {
@@ -195,7 +225,10 @@ import { initBook } from "./book3d.js?v=turnlock";
     if (dy > 0) {
       if (y >= max - 1) {
         e.preventDefault();
-        if (turning()) return;
+        if (turning()) {
+          dropInput();
+          return;
+        }
         if (step < LAST && dy > 20) {
           touchY = e.touches[0].clientY;
           advance(1);
@@ -212,7 +245,10 @@ import { initBook } from "./book3d.js?v=turnlock";
     if (dy < 0) {
       if (y <= min + 1) {
         e.preventDefault();
-        if (turning()) return;
+        if (turning()) {
+          dropInput();
+          return;
+        }
         if (step > OPEN && dy < -20) {
           touchY = e.touches[0].clientY;
           advance(-1);
@@ -236,12 +272,20 @@ import { initBook } from "./book3d.js?v=turnlock";
 
     if (down && y >= max - 1) {
       e.preventDefault();
-      if (!turning() && step < LAST) advance(1);
+      if (turning()) {
+        dropInput();
+        return;
+      }
+      if (step < LAST) advance(1);
       return;
     }
     if (up && y <= min + 1) {
       e.preventDefault();
-      if (!turning() && step > OPEN) advance(-1);
+      if (turning()) {
+        dropInput();
+        return;
+      }
+      if (step > OPEN) advance(-1);
     }
   }
 
