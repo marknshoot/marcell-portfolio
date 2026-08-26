@@ -27,6 +27,7 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: clip;
 }
 
 body {
@@ -36,7 +37,6 @@ body {
   font-family: var(--sans);
   font-size: 16.5px;
   line-height: 1.55;
-  overflow-x: hidden;
 }
 
 img {
@@ -722,18 +722,19 @@ a:focus-visible,
 
 .pet {
   position: fixed;
-  left: 0;
-  bottom: 8px;
-  z-index: 8;
-  width: 96px;
+  left: 16px;
+  bottom: 16px;
+  z-index: 9999;
+  width: 120px;
   cursor: pointer;
   user-select: none;
+  pointer-events: auto;
 }
 
 .pet-img {
-  width: 96px;
-  height: 96px;
-  image-rendering: auto;
+  width: 120px;
+  height: 120px;
+  display: block;
   pointer-events: none;
 }
 
@@ -851,12 +852,12 @@ a:focus-visible,
 
   .pet,
   .pet-img {
-    width: 72px;
+    width: 96px;
     height: auto;
   }
 
   .pet-img {
-    height: 72px;
+    height: 96px;
   }
 }
 
@@ -865,7 +866,4 @@ a:focus-visible,
     scroll-behavior: auto;
   }
 
-  .pet {
-    display: none;
-  }
 }
