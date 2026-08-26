@@ -197,7 +197,6 @@
     }
 
     const sec = visibleSection();
-    el.classList.toggle("pet--away", sec === "close");
     if (sec !== shownSection && mode !== "wave" && mode !== "fall") {
       shownSection = sec;
       const map = { hero: L.hero, projects: L.projects, skills: L.skills, about: L.about, close: L.close };
