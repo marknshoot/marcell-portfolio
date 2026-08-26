@@ -1,4 +1,4 @@
-import { initBook } from "./book3d.js?v=hololock";
+import { initBook } from "./book3d.js?v=nogue";
 
 (() => {
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -36,8 +36,8 @@ import { initBook } from "./book3d.js?v=hololock";
   let busy = false;
   let page = 0;
   let acc = 0;
-  let blocked = false;
-  let quietTimer = 0;
+  let ignoreUntil = 0;
+  let unlockTimer = 0;
 
   function paintTabs() {
     tabs.forEach((btn, i) => {
@@ -57,36 +57,22 @@ import { initBook } from "./book3d.js?v=hololock";
   }
 
   function turning() {
-    return busy || blocked || (book3d && book3d.isBusy());
+    return busy || performance.now() < ignoreUntil || (book3d && book3d.isBusy());
   }
 
   function lockTurn() {
     busy = true;
-    blocked = true;
     acc = 0;
+    ignoreUntil = 0;
     book.classList.add("is-turning");
-    window.clearTimeout(quietTimer);
-  }
-
-  function openGate() {
-    blocked = true;
-    acc = 0;
-    window.clearTimeout(quietTimer);
-    quietTimer = window.setTimeout(() => {
-      blocked = false;
-      acc = 0;
-    }, 240);
-  }
-
-  function dropInput() {
-    acc = 0;
-    if (!busy) openGate();
+    window.clearTimeout(unlockTimer);
   }
 
   function unlockTurn() {
     busy = false;
+    acc = 0;
+    ignoreUntil = performance.now() + 90;
     book.classList.remove("is-turning");
-    openGate();
   }
 
   function scroller() {
@@ -147,11 +133,17 @@ import { initBook } from "./book3d.js?v=hololock";
         return;
       }
       showFloat(true);
-      window.setTimeout(unlockTurn, reduce ? 0 : 360);
+      window.clearTimeout(unlockTimer);
+      unlockTimer = window.setTimeout(unlockTurn, reduce ? 0 : 360);
     }
 
-    if (book3d) book3d.setStep(step, afterBook);
-    else window.setTimeout(afterBook, animate === false ? 0 : 900);
+    if (book3d) {
+      const ok = book3d.setStep(step, afterBook);
+      if (ok === false) unlockTurn();
+    } else {
+      window.clearTimeout(unlockTimer);
+      unlockTimer = window.setTimeout(afterBook, animate === false ? 0 : 900);
+    }
     clamp();
   }
 
@@ -173,7 +165,7 @@ import { initBook } from "./book3d.js?v=hololock";
       if (y >= max - 1) {
         e.preventDefault();
         if (turning()) {
-          dropInput();
+          acc = 0;
           return;
         }
         if (step < LAST) {
@@ -194,7 +186,7 @@ import { initBook } from "./book3d.js?v=hololock";
       if (y <= min + 1) {
         e.preventDefault();
         if (turning()) {
-          dropInput();
+          acc = 0;
           return;
         }
         if (step > OPEN) {
@@ -226,7 +218,7 @@ import { initBook } from "./book3d.js?v=hololock";
       if (y >= max - 1) {
         e.preventDefault();
         if (turning()) {
-          dropInput();
+          acc = 0;
           return;
         }
         if (step < LAST && dy > 20) {
@@ -246,7 +238,7 @@ import { initBook } from "./book3d.js?v=hololock";
       if (y <= min + 1) {
         e.preventDefault();
         if (turning()) {
-          dropInput();
+          acc = 0;
           return;
         }
         if (step > OPEN && dy < -20) {
@@ -273,7 +265,7 @@ import { initBook } from "./book3d.js?v=hololock";
     if (down && y >= max - 1) {
       e.preventDefault();
       if (turning()) {
-        dropInput();
+        acc = 0;
         return;
       }
       if (step < LAST) advance(1);
@@ -282,7 +274,7 @@ import { initBook } from "./book3d.js?v=hololock";
     if (up && y <= min + 1) {
       e.preventDefault();
       if (turning()) {
-        dropInput();
+        acc = 0;
         return;
       }
       if (step > OPEN) advance(-1);

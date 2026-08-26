@@ -195,6 +195,7 @@ export function initBook(canvas) {
 
   function finishTurn(token) {
     if (token !== turnToken) return;
+    settleUntil = 0;
     const cb = onTurnDone;
     onTurnDone = null;
     if (cb) cb();
@@ -221,17 +222,18 @@ export function initBook(canvas) {
 
   function setPage(next, done) {
     next = Math.max(0, Math.min(PAGE_COUNT, next));
-    if (isBusy() && next !== targetPage) return;
+    if (isBusy() && next !== targetPage) return false;
     onTurnDone = done || null;
     const token = ++turnToken;
     if (next === targetPage && delayedPage === targetPage) {
       settleUntil = 0;
       finishTurn(token);
-      return;
+      return true;
     }
     targetPage = next;
     settleUntil = performance.now() + 720;
     stepTowardTarget(token);
+    return true;
   }
 
   function resize() {
@@ -298,7 +300,7 @@ export function initBook(canvas) {
   return {
     isBusy,
     setStep(step, done) {
-      setPage(STEP_PAGES[step] ?? 0, done);
+      return setPage(STEP_PAGES[step] ?? 0, done);
     },
   };
 }
