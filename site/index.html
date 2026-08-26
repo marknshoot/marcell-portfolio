@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en" data-lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Marcell Hermawan Kristianto — AI Engineer intern</title>
+    <meta
+      name="description"
+      content="5th-semester Data Science student at Binus. Builds AI agents and ML systems. Available now for AI Engineer internships."
+    />
+    <meta property="og:title" content="Marcell Hermawan Kristianto — AI Engineer intern" />
+    <meta
+      property="og:description"
+      content="AI agents and ML systems that actually run. Open for AI Engineer internships."
+    />
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <div class="cuff" aria-hidden="true"></div>
+    <header class="bar">
+      <a class="bar-name" href="#top">
+        <img class="bar-mark" src="assets/ds-patch.png" alt="" width="28" height="23" />
+        Marcell
+      </a>
+      <nav class="bar-nav" aria-label="Primary">
+        <a href="#projects" data-i18n="nav.projects">Projects</a>
+        <a href="#skills" data-i18n="nav.skills">Skills</a>
+        <a href="#about" data-i18n="nav.about">About</a>
+        <a href="mailto:marcellkristianto.ai@gmail.com" data-i18n="nav.email">Email</a>
+      </nav>
+      <div class="lang" role="group" aria-label="Language">
+        <button type="button" data-lang="en" aria-pressed="true">EN</button>
+        <span aria-hidden="true">/</span>
+        <button type="button" data-lang="id" aria-pressed="false">ID</button>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero" id="top">
+        <p class="year-mark" aria-hidden="true"><span>26</span><span>27</span></p>
+        <div class="hero-copy">
+          <p class="kicker" data-i18n="hero.kicker">
+            Binus University · Data Science · 5th semester
+          </p>
+          <h1 data-i18n="hero.headline">
+            AI Engineer intern who builds agents and ML systems that actually run
+          </h1>
+          <p class="subhead" data-i18n="hero.subhead">
+            Hybrid search, recommendations, RAG, and models you can audit — from data to something that runs.
+          </p>
+          <p class="hero-meta" data-i18n="hero.meta">Available now · East Jakarta, Indonesia</p>
+          <div class="actions">
+            <a class="btn btn-fill" href="mailto:marcellkristianto.ai@gmail.com" data-i18n="hero.ctaEmail"
+              >Email me about internships</a
+            >
+            <a class="btn btn-line" href="https://github.com/marknshoot" data-i18n="hero.ctaGithub">View GitHub</a>
+          </div>
+        </div>
+        <figure class="hero-photo">
+          <img
+            class="hero-cutout"
+            src="assets/cutout.png"
+            width="671"
+            height="1011"
+            alt="Portrait of Marcell Hermawan Kristianto"
+          />
+          <figcaption data-i18n="hero.caption">DS 26/27 · Binus University</figcaption>
+        </figure>
+      </section>
+
+      <section class="lockers" id="roles" aria-label="Internship roles">
+        <article class="locker locker-lead">
+          <p class="locker-meta"><span data-i18n="roles.lead">Lead</span> · intern</p>
+          <h2>AI Engineer</h2>
+        </article>
+        <article class="locker">
+          <p class="locker-meta">intern</p>
+          <h2>Data Scientist</h2>
+        </article>
+        <article class="locker">
+          <p class="locker-meta">intern</p>
+          <h2>Data Engineer</h2>
+        </article>
+      </section>
+
+      <section class="plays" id="projects">
+        <header class="plays-head">
+          <p class="kicker" data-i18n="projects.kicker">Proof</p>
+          <h2 data-i18n="projects.title">Selected work</h2>
+          <p class="helper" data-i18n="projects.helper">
+            Three highlights. Full method and numbers live in each GitHub README once the repo is public.
+          </p>
+        </header>
+
+        <div class="playboard">
+          <article class="play play-shop">
+            <div class="shop-sign">
+              <img src="assets/ds-patch.png" alt="" />
+              <h3>Toko Marcell</h3>
+            </div>
+            <span class="tag" data-i18n="p1.status">In progress</span>
+            <p data-i18n="p1.body">
+              Indonesian e-commerce with hybrid search (BM25 + embeddings), session recommendations, and a
+              tool-using copilot in one stack. Still in progress — evaluation comes before any score on this page.
+            </p>
+            <p class="stack">Next.js · FastAPI · pgvector · Docker</p>
+          </article>
+
+          <article class="play play-ledger">
+            <div class="ledger-top">
+              <span class="ledger-no">02</span>
+              <h3>Credit-Risk Deep-Dive</h3>
+              <span class="tag tag-done" data-i18n="p2.status">Finished</span>
+            </div>
+            <p data-i18n="p2.body">
+              Credit scoring on a 50,000-row customer panel, from SQL through model, SHAP, and cost math. A random
+              split leaked customers into both train and test; the write-up uses a grouped split and reports the
+              honest drop. Method and numbers are in the GitHub README.
+            </p>
+            <ul class="ledger-stack">
+              <li>Python</li>
+              <li>SQL</li>
+              <li>scikit-learn</li>
+              <li>SHAP</li>
+              <li>Kaggle</li>
+            </ul>
+          </article>
+
+          <article class="play play-agent">
+            <div class="term-bar" aria-hidden="true">
+              <span></span><span></span><span></span>
+              <code>rag-agent</code>
+            </div>
+            <div class="term-body">
+              <p class="term-prompt">$ status</p>
+              <p class="tag tag-plan" data-i18n="p3.status">Planned</p>
+              <h3>RAG Research Agent</h3>
+              <p data-i18n="p3.body">
+                Planned research agent: query → plan → retrieve → cited answer, with retrieval eval and tools over MCP.
+                On this page as direction, not as shipped work.
+              </p>
+              <p class="stack">FastAPI · pgvector · RAGAS · MCP SDK · Groq / OpenRouter</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="jacket" id="skills">
+        <header class="plays-head">
+          <p class="kicker" data-i18n="skills.kicker">Day one</p>
+          <h2 data-i18n="skills.title">Skills I can use on day one</h2>
+        </header>
+        <div class="patch-board">
+          <div>
+            <h3>Machine learning / AI</h3>
+            <ul class="patches">
+              <li><strong>Python</strong><span>data · APIs · agent loops</span></li>
+              <li><strong>PyTorch</strong><span>deep learning</span></li>
+              <li><strong>scikit-learn</strong><span>classical ML</span></li>
+              <li><strong>LLM / RAG</strong><span>retrieval · grounding · evals</span></li>
+            </ul>
+          </div>
+          <div>
+            <h3>Data</h3>
+            <ul class="patches">
+              <li><strong>SQL</strong><span>window functions · Postgres</span></li>
+              <li><strong>pgvector</strong><span>embeddings in Postgres</span></li>
+            </ul>
+          </div>
+          <div>
+            <h3>Engineering</h3>
+            <ul class="patches">
+              <li><strong>FastAPI</strong><span>backends · agent tools</span></li>
+              <li><strong>Next.js</strong><span>product UI</span></li>
+              <li><strong>Docker</strong><span>local compose</span></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="scoreboard" id="education">
+        <p class="kicker kicker-on-navy" data-i18n="edu.kicker">Education</p>
+        <div class="score-row">
+          <div>
+            <span class="score-label">School</span>
+            <strong data-i18n="edu.school">Binus University</strong>
+          </div>
+          <div>
+            <span class="score-label">Program</span>
+            <strong data-i18n="edu.program">Data Science</strong>
+          </div>
+          <div>
+            <span class="score-label" data-i18n="edu.semLabel">Semester</span>
+            <strong data-i18n="edu.sem">5th</strong>
+          </div>
+          <div>
+            <span class="score-label" data-i18n="edu.yearLabel">Grad</span>
+            <strong>2028</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="file" id="about">
+        <p class="file-tab" data-i18n="about.kicker">About</p>
+        <div class="file-panel">
+          <h2 data-i18n="about.title">How I work</h2>
+          <div class="about-row">
+            <p class="about-body" data-i18n="about.body">
+              Marcell Hermawan Kristianto is a 5th-semester Data Science student at Binus University. He builds AI
+              agents and machine learning systems — hybrid search, recommendations, RAG, and models that get evaluated
+              honestly. Work is meant to run: an API, an app, or a notebook a hiring manager can inspect. He is
+              available now for an AI Engineer internship; Data Scientist and Data Engineer roles are adjacent fits.
+              Indonesian is his main language; he also works in English.
+            </p>
+            <div class="still-life">
+              <img class="still-book" src="assets/book.png" alt="" width="140" height="137" />
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <section class="close" aria-labelledby="close-title">
+      <p class="kicker kicker-on-navy" data-i18n="close.kicker">Next</p>
+      <h2 id="close-title" data-i18n="close.title">
+        If you have an intern seat on an AI, data science, or data engineering team, email me.
+      </h2>
+      <div class="actions">
+        <a class="btn btn-light" href="mailto:marcellkristianto.ai@gmail.com" data-i18n="close.ctaEmail"
+          >Email me about internships</a
+        >
+        <a class="btn btn-ghost" href="https://github.com/marknshoot" data-i18n="close.ctaGithub">View GitHub</a>
+      </div>
+    </section>
+
+    <div class="cuff" aria-hidden="true"></div>
+    <footer class="foot">
+      <p>Marcell Hermawan Kristianto · <span data-i18n="footer.tag">AI Engineer intern</span></p>
+      <p class="foot-links">
+        <a href="mailto:marcellkristianto.ai@gmail.com">Email</a>
+        <a href="https://github.com/marknshoot">GitHub</a>
+        <a href="https://www.linkedin.com/in/marcell-hermawan-kristianto/">LinkedIn</a>
+      </p>
+    </footer>
+    <script src="i18n.js" defer></script>
+    <script src="pet.js" defer></script>
+  </body>
+</html>
