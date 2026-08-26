@@ -265,7 +265,7 @@ export function initBook(canvas) {
   resize();
   requestAnimationFrame(tick);
 
-  const STEP_PAGES = [0, 2, 4, 6, 0];
+  const STEP_PAGES = [0, 2, 4, 6, PAGE_COUNT];
 
   return {
     setStep(step) {
