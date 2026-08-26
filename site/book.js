@@ -2,7 +2,6 @@ import { initBook } from "./book3d.js";
 
 (() => {
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (reduce) return;
 
   const folio = document.getElementById("folio");
   const book = document.getElementById("book");
@@ -296,9 +295,14 @@ import { initBook } from "./book3d.js";
       if (busy) return;
       const i = Number(btn.getAttribute("data-page"));
       if (!Number.isFinite(i)) return;
-      applyStep(PAGE0 + i, true);
+      applyStep(PAGE0 + i, !reduce);
     });
   });
+
+  if (reduce) {
+    applyStep(PAGE0, false);
+    return;
+  }
 
   document.querySelectorAll(".bar a[href^='#']").forEach((a) => {
     a.addEventListener("click", () => {
