@@ -114,17 +114,21 @@ import { initBook } from "./book3d.js?v=noq3";
     return { min: d, max: d };
   }
 
+  function setScrollTop(el, y) {
+    const prev = el.style.scrollBehavior;
+    el.style.scrollBehavior = "auto";
+    el.scrollTop = y;
+    el.style.scrollBehavior = prev;
+  }
+
   function clamp() {
     if (!ready) return;
     const { min, max } = bounds();
     const el = scroller();
     const y = el.scrollTop;
     if (y <= max + 1 && y >= min - 1) return;
-    const prev = el.style.scrollBehavior;
-    el.style.scrollBehavior = "auto";
-    if (y > max) el.scrollTop = max;
-    else if (y < min) el.scrollTop = min;
-    el.style.scrollBehavior = prev;
+    if (y > max) setScrollTop(el, max);
+    else if (y < min) setScrollTop(el, min);
   }
 
   function wheelPx(e) {
@@ -223,7 +227,7 @@ import { initBook } from "./book3d.js?v=noq3";
       }
       if (y + px > max) {
         e.preventDefault();
-        el.scrollTop = max;
+        setScrollTop(el, max);
         acc = 0;
       }
       return;
@@ -237,7 +241,7 @@ import { initBook } from "./book3d.js?v=noq3";
       }
       if (y + px < min) {
         e.preventDefault();
-        el.scrollTop = min;
+        setScrollTop(el, min);
         acc = 0;
       }
     }
@@ -267,7 +271,7 @@ import { initBook } from "./book3d.js?v=noq3";
       }
       if (y + dy > max) {
         e.preventDefault();
-        el.scrollTop = max;
+        setScrollTop(el, max);
       }
       return;
     }
@@ -280,7 +284,7 @@ import { initBook } from "./book3d.js?v=noq3";
       }
       if (y + dy < min) {
         e.preventDefault();
-        el.scrollTop = min;
+        setScrollTop(el, min);
       }
     }
   }
