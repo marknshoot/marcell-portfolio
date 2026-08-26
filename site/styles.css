@@ -959,6 +959,11 @@ a:focus-visible,
   .pet-img {
     height: 96px;
   }
+
+  .ivy {
+    width: 140px;
+    opacity: 0.35;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
