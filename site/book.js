@@ -49,9 +49,45 @@ import { initBook } from "./book3d.js";
     const showPage = on && step >= PAGE0 && step <= PAGE2;
     floats.forEach((el, i) => {
       const show = showPage && i === page;
-      el.hidden = !show;
       el.classList.toggle("is-on", show);
     });
+  }
+
+  const html = document.documentElement;
+  const skipFs = new URLSearchParams(location.search).has("book");
+  let fs = false;
+  let coolExit = false;
+
+  function setFs(on) {
+    if (skipFs) return;
+    fs = on;
+    html.classList.toggle("book-fs", on);
+  }
+
+  function tryEnter(dir) {
+    if (fs || coolExit || skipFs) return;
+    if (dir >= 0 && step === SHUT) applyStep(OPEN, false);
+    if (dir < 0 && (step === OPEN || step === PAGE0)) applyStep(SHUT, false);
+    setFs(true);
+  }
+
+  function tryExit(dir) {
+    if (!fs) return false;
+    setFs(false);
+    coolExit = true;
+    window.requestAnimationFrame(() => {
+      if (dir > 0) {
+        const after = document.getElementById("skills") || folio.nextElementSibling;
+        after?.scrollIntoView({ block: "start", behavior: "auto" });
+      } else {
+        const before = document.querySelector(".lockers");
+        before?.scrollIntoView({ block: "end", behavior: "auto" });
+      }
+      window.setTimeout(() => {
+        coolExit = false;
+      }, 480);
+    });
+    return true;
   }
 
   function cooldown(ms) {
@@ -95,33 +131,65 @@ import { initBook } from "./book3d.js";
   }
 
   function onWheel(e) {
-    if (!inGate()) return;
-    if (busy) {
+    if (coolExit) {
       e.preventDefault();
       return;
     }
+    if (fs) e.preventDefault();
     if (Math.abs(e.deltaY) < 12) return;
     const dir = e.deltaY > 0 ? 1 : -1;
-    if (advance(dir)) e.preventDefault();
+    if (!fs) {
+      if (inGate()) {
+        tryEnter(dir);
+        e.preventDefault();
+      }
+      return;
+    }
+    if (busy) return;
+    if (step === OPEN && dir < 0) {
+      tryExit(-1);
+      return;
+    }
+    if (step === SHUT && dir > 0) {
+      tryExit(1);
+      return;
+    }
+    advance(dir);
   }
 
   let touchY = null;
   function onTouchStart(e) {
-    if (!inGate()) return;
+    if (!fs && inGate()) tryEnter(1);
+    if (!fs) return;
     touchY = e.touches[0].clientY;
   }
   function onTouchMove(e) {
     if (touchY == null) return;
-    if (!inGate()) return;
-    if (busy) {
-      e.preventDefault();
-      return;
-    }
+    if (!fs) return;
+    e.preventDefault();
+    if (busy) return;
     const dy = touchY - e.touches[0].clientY;
     if (Math.abs(dy) < 28) return;
     const dir = dy > 0 ? 1 : -1;
     touchY = e.touches[0].clientY;
-    if (advance(dir)) e.preventDefault();
+    if (step === OPEN && dir < 0) {
+      tryExit(-1);
+      return;
+    }
+    if (step === SHUT && dir > 0) {
+      tryExit(1);
+      return;
+    }
+    advance(dir);
+  }
+
+  let lastY = window.scrollY;
+  function onScroll() {
+    const y = window.scrollY;
+    const dir = y >= lastY ? 1 : -1;
+    lastY = y;
+    if (fs || coolExit || skipFs) return;
+    if (inGate()) tryEnter(dir);
   }
 
   tabs.forEach((btn) => {
@@ -136,9 +204,27 @@ import { initBook } from "./book3d.js";
   window.addEventListener("wheel", onWheel, { passive: false });
   window.addEventListener("touchstart", onTouchStart, { passive: true });
   window.addEventListener("touchmove", onTouchMove, { passive: false });
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("keydown", (e) => {
+    if (!fs) return;
+    if (e.key !== "Escape") return;
+    tryExit(step === OPEN ? -1 : 1);
+  });
+  document.querySelectorAll(".bar a[href^='#']").forEach((a) => {
+    a.addEventListener("click", () => {
+      if (!fs) return;
+      if (a.getAttribute("href") === "#projects") return;
+      setFs(false);
+      coolExit = true;
+      window.setTimeout(() => {
+        coolExit = false;
+      }, 480);
+    });
+  });
 
   const params = new URLSearchParams(location.search);
-  const forced = Number(params.get("book"));
+  const rawBook = params.get("book");
+  const forced = rawBook == null ? NaN : Number(rawBook);
   if (Number.isFinite(forced) && forced >= OPEN && forced <= LAST) {
     applyStep(forced, false);
     book.scrollIntoView({ block: "center" });
