@@ -1,3 +1,5 @@
+import { initBook } from "./book3d.js";
+
 (() => {
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (reduce) return;
@@ -12,10 +14,16 @@
   document.documentElement.classList.add("book-ok");
 
   const floats = [...hover.querySelectorAll(".book-float")];
-  const leaves = [...book.querySelectorAll(".leaf")];
   const tabs = [...document.querySelectorAll(".book-chapters button")];
+  const canvas = document.getElementById("book-canvas");
+  let book3d = null;
+  try {
+    if (canvas) book3d = initBook(canvas);
+  } catch (err) {
+    console.error(err);
+    return;
+  }
   const n = floats.length;
-  const PER = 3;
   const OPEN = 0;
   const PAGE0 = 1;
   const PAGE1 = 2;
@@ -46,24 +54,6 @@
     });
   }
 
-  function turnLeaves(index, stagger) {
-    const count = index == null ? 0 : (index + 1) * PER;
-    leaves.forEach((leaf, i) => {
-      const should = i < count;
-      const on = leaf.classList.contains("is-turned");
-      if (should === on) return;
-      const apply = () => {
-        leaf.classList.toggle("is-turned", should);
-        leaf.classList.add("is-flipping");
-        window.setTimeout(() => leaf.classList.remove("is-flipping"), 560);
-      };
-      if (stagger) {
-        const delay = Math.abs((should ? i : count) - (should ? count - PER : i)) * 55;
-        window.setTimeout(apply, Math.max(0, delay));
-      } else apply();
-    });
-  }
-
   function cooldown(ms) {
     busy = true;
     book.classList.add("is-turning");
@@ -78,15 +68,14 @@
     if (step === OPEN || step === SHUT) {
       book.classList.add("is-shut");
       showFloat(false);
-      turnLeaves(-1, false);
       page = 0;
     } else {
       book.classList.remove("is-shut");
       page = step - PAGE0;
       showFloat(false);
-      turnLeaves(page, animate);
-      window.setTimeout(() => showFloat(true), animate ? 520 : 0);
+      window.setTimeout(() => showFloat(true), animate ? 420 : 0);
     }
+    if (book3d) book3d.setStep(step);
     paintTabs();
     cooldown(animate ? 860 : 0);
   }
@@ -148,7 +137,8 @@
   window.addEventListener("touchstart", onTouchStart, { passive: true });
   window.addEventListener("touchmove", onTouchMove, { passive: false });
 
-  const forced = Number(new URLSearchParams(location.search).get("book"));
+  const params = new URLSearchParams(location.search);
+  const forced = Number(params.get("book"));
   if (Number.isFinite(forced) && forced >= OPEN && forced <= LAST) {
     applyStep(forced, false);
     book.scrollIntoView({ block: "center" });

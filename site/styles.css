@@ -429,15 +429,15 @@ html.book-ok .plays > .playboard {
 }
 
 .book {
-  --cover-w: 240px;
-  --cover-h: 180px;
   position: relative;
-  height: 440px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  perspective: 1400px;
-  perspective-origin: 50% 45%;
+  width: min(900px, 100%);
+  margin: 0 auto;
+}
+
+#book-canvas {
+  width: 100%;
+  height: 420px;
+  display: block;
 }
 
 .book:not(.is-shut) {
@@ -460,21 +460,22 @@ html.book-ok .plays > .playboard {
 .open-rig {
   position: relative;
   transform-style: preserve-3d;
-  height: var(--cover-h);
+  height: var(--page-h);
+  flex: none;
 }
 
 .shut-rig {
-  width: calc(var(--cover-w) + 48px);
+  width: var(--page-w);
   display: grid;
-  grid-template-columns: 22px var(--cover-w) 26px;
-  transform: rotateX(40deg);
+  grid-template-columns: 18px 1fr 14px;
+  transform: rotateX(38deg);
   box-shadow: 0 24px 32px rgba(18, 24, 38, 0.2);
 }
 
 .open-rig {
   display: none;
-  width: calc(var(--cover-w) * 2);
-  transform: rotateX(40deg);
+  width: calc(var(--page-w) * 2);
+  transform: rotateX(38deg);
 }
 
 .book:not(.is-shut) .shut-rig {
@@ -564,14 +565,14 @@ html.book-ok .plays > .playboard {
   left: 0;
   width: 50%;
   transform-origin: 100% 50%;
-  transform: rotateY(30deg);
+  transform: rotateY(var(--rise));
 }
 
 .well-r {
   left: 50%;
   width: 50%;
   transform-origin: 0 50%;
-  transform: rotateY(-30deg);
+  transform: rotateY(calc(0deg - var(--rise)));
 }
 
 .well {
@@ -618,15 +619,21 @@ html.book-ok .plays > .playboard {
   z-index: 5;
   pointer-events: none;
   opacity: 0;
-  transition: transform 0.6s cubic-bezier(0.22, 0.7, 0.2, 1);
+  transition: transform 0.7s cubic-bezier(0.22, 0.65, 0.2, 1);
 }
 
-.book.is-turning .leaf {
+.book.is-turning .leaf,
+.book.show-leaves .leaf {
   opacity: 1;
 }
 
 .leaf.is-turned {
-  transform: rotateY(-150deg);
+  transform: rotateY(calc(180deg - var(--rise)));
+}
+
+.leaf.is-mid {
+  opacity: 1 !important;
+  transform: rotateY(90deg) !important;
 }
 
 .leaf .face {
@@ -1353,9 +1360,9 @@ html.book-ok .plays > .playboard {
   }
 
   .book {
-    --cover-w: 150px;
-    --cover-h: 150px;
-    height: 380px;
+    --page-w: 148px;
+    --page-h: 190px;
+    height: 400px;
   }
 
   .book-hover {
