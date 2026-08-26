@@ -1262,13 +1262,6 @@ html.book-ok .plays > .playboard {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .pet--drag .pet-img,
-  .close-chibi.is-waving {
-    animation: none;
-  }
-}
-
 .foot {
   display: flex;
   flex-wrap: wrap;
@@ -1510,17 +1503,5 @@ html.book-ok .plays > .playboard {
   .close-chibi {
     width: 132px;
     height: 132px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-
-  .book-float.is-on,
-  .book-float::after,
-  .close-chibi.is-waving {
-    animation: none;
   }
 }

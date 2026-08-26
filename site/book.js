@@ -1,8 +1,6 @@
 import { initBook } from "./book3d.js?v=noq3";
 
 (() => {
-  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
   const folio = document.getElementById("folio");
   const book = document.getElementById("book");
   const hover = document.getElementById("book-hover");
@@ -162,7 +160,7 @@ import { initBook } from "./book3d.js?v=noq3";
       }
       showFloat(true);
       window.clearTimeout(unlockTimer);
-      unlockTimer = window.setTimeout(unlockTurn, reduce ? 0 : 360);
+      unlockTimer = window.setTimeout(unlockTurn, 360);
     }
 
     if (book3d) {

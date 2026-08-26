@@ -1,5 +1,4 @@
 (() => {
-  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const closeHost = document.getElementById("close");
   const closeChibi = document.querySelector(".close-chibi");
   if (closeHost && closeChibi) {
@@ -181,7 +180,7 @@
       const floor = maxY();
       if (y >= floor) {
         y = floor;
-        if (!reduce && Math.abs(vy) > 0.5) {
+        if (Math.abs(vy) > 0.5) {
           vy = -vy * 0.28;
         } else {
           vy = 0;
@@ -292,13 +291,6 @@
     if (y >= maxY() - 1) {
       say(pack().drop);
       startWalk(dir > 0 ? maxX() : minX());
-      return;
-    }
-    if (reduce) {
-      y = maxY();
-      say(pack().drop);
-      startWalk(dir > 0 ? maxX() : minX());
-      place();
       return;
     }
     mode = "fall";
