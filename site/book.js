@@ -31,15 +31,10 @@ import { initBook } from "./book3d.js";
   const LAST = SHUT;
   const BAR = 64;
   const html = document.documentElement;
-  const body = document.body;
 
   let step = OPEN;
   let busy = false;
   let page = 0;
-  let frozen = false;
-  let dockY = 0;
-  let speed = 0;
-  let lastWheelAt = 0;
   let acc = 0;
 
   function paintTabs() {
@@ -72,12 +67,27 @@ import { initBook } from "./book3d.js";
     return document.scrollingElement || html;
   }
 
-  function refreshDock() {
-    dockY = Math.max(0, Math.round(window.scrollY + folio.getBoundingClientRect().top - BAR));
+  function dockY() {
+    return Math.max(0, Math.round(folio.getBoundingClientRect().top + window.scrollY - BAR));
   }
 
-  function atDock() {
-    return Math.abs(scroller().scrollTop - dockY) <= 8;
+  function maxDoc() {
+    const el = scroller();
+    return Math.max(0, el.scrollHeight - window.innerHeight);
+  }
+
+  function bounds() {
+    const d = dockY();
+    if (step === OPEN) return { min: 0, max: d };
+    if (step === SHUT) return { min: d, max: maxDoc() };
+    return { min: d, max: d };
+  }
+
+  function clamp() {
+    const { min, max } = bounds();
+    const el = scroller();
+    if (el.scrollTop > max) el.scrollTop = max;
+    else if (el.scrollTop < min) el.scrollTop = min;
   }
 
   function wheelPx(e) {
@@ -85,44 +95,6 @@ import { initBook } from "./book3d.js";
     if (e.deltaMode === 1) d *= 16;
     if (e.deltaMode === 2) d *= window.innerHeight;
     return d;
-  }
-
-  function lookahead(px) {
-    const now = performance.now();
-    const dt = Math.max(8, now - lastWheelAt);
-    lastWheelAt = now;
-    speed = speed * 0.55 + px / dt * 16;
-    return Math.min(1400, Math.max(220, Math.abs(px) * 5, Math.abs(speed) * 50));
-  }
-
-  function freeze() {
-    if (frozen) return;
-    frozen = true;
-    html.classList.add("book-frozen");
-    body.classList.add("book-frozen");
-    html.classList.add("book-hold");
-  }
-
-  function unfreeze() {
-    if (!frozen) return;
-    frozen = false;
-    acc = 0;
-    html.classList.remove("book-frozen");
-    body.classList.remove("book-frozen");
-    html.classList.toggle("book-hold", step > OPEN && step < LAST);
-  }
-
-  function pin() {
-    if (!frozen) refreshDock();
-    freeze();
-    const el = scroller();
-    if (Math.abs(el.scrollTop - dockY) <= 0.5) return;
-    el.scrollTop = dockY;
-    html.scrollTop = dockY;
-    body.scrollTop = dockY;
-    requestAnimationFrame(() => {
-      if (Math.abs(el.scrollTop - dockY) > 0.5) el.scrollTop = dockY;
-    });
   }
 
   function applyStep(next, animate) {
@@ -139,63 +111,56 @@ import { initBook } from "./book3d.js";
     }
     if (book3d) book3d.setStep(step);
     paintTabs();
-    html.classList.toggle("book-hold", frozen || (step > OPEN && step < LAST));
+    html.classList.toggle("book-hold", step !== OPEN && step !== SHUT);
     cooldown(animate ? 860 : 0);
+    clamp();
   }
 
   function advance(dir) {
     if (busy) return;
     const next = step + dir;
     if (next < OPEN || next > LAST) return;
-    applyStep(next, true);
-  }
-
-  function catchDown(px) {
-    if (step >= LAST) return false;
-    refreshDock();
-    const remain = dockY - scroller().scrollTop;
-    return remain <= lookahead(px);
-  }
-
-  function catchUp(px) {
-    if (step <= OPEN) return false;
-    refreshDock();
-    const remain = scroller().scrollTop - dockY;
-    return remain <= lookahead(px);
+    acc = 0;
+    applyStep(next, !reduce);
   }
 
   function onWheel(e) {
+    const { min, max } = bounds();
+    const el = scroller();
+    const y = el.scrollTop;
     const px = wheelPx(e);
-    const dir = px > 0 ? 1 : -1;
 
-    if (frozen) {
-      e.preventDefault();
-      pin();
-      if (busy) return;
-      acc += px;
-      if (acc > 36) {
+    if (px > 0) {
+      if (y >= max - 1) {
+        e.preventDefault();
+        if (step < LAST) {
+          acc += px;
+          if (!busy && acc > 40) advance(1);
+        }
+        return;
+      }
+      if (y + px > max) {
+        e.preventDefault();
+        el.scrollTop = max;
         acc = 0;
-        if (step < LAST) advance(1);
-        else unfreeze();
-      } else if (acc < -36) {
-        acc = 0;
-        if (step > OPEN) advance(-1);
-        else unfreeze();
       }
       return;
     }
 
-    if (dir > 0 && catchDown(px || 24)) {
-      e.preventDefault();
-      pin();
-      acc = 0;
-      return;
-    }
-
-    if (dir < 0 && catchUp(px || 24)) {
-      e.preventDefault();
-      pin();
-      acc = 0;
+    if (px < 0) {
+      if (y <= min + 1) {
+        e.preventDefault();
+        if (step > OPEN) {
+          acc += px;
+          if (!busy && acc < -40) advance(-1);
+        }
+        return;
+      }
+      if (y + px < min) {
+        e.preventDefault();
+        el.scrollTop = min;
+        acc = 0;
+      }
     }
   }
 
@@ -205,36 +170,40 @@ import { initBook } from "./book3d.js";
   }
   function onTouchMove(e) {
     if (touchY == null) return;
+    const { min, max } = bounds();
+    const el = scroller();
+    const y = el.scrollTop;
     const dy = touchY - e.touches[0].clientY;
-    const dir = dy > 0 ? 1 : -1;
 
-    if (frozen) {
-      if (busy || Math.abs(dy) < 24) {
+    if (dy > 0) {
+      if (y >= max - 1) {
         e.preventDefault();
-        return;
-      }
-      if (dir > 0) {
-        if (step < LAST) {
-          e.preventDefault();
+        if (step < LAST && !busy && dy > 20) {
           touchY = e.touches[0].clientY;
           advance(1);
-        } else unfreeze();
-      } else if (step > OPEN) {
+        }
+        return;
+      }
+      if (y + dy > max) {
         e.preventDefault();
-        touchY = e.touches[0].clientY;
-        advance(-1);
-      } else unfreeze();
+        el.scrollTop = max;
+      }
       return;
     }
 
-    if (dir > 0 && catchDown(dy)) {
-      e.preventDefault();
-      pin();
-      return;
-    }
-    if (dir < 0 && catchUp(dy)) {
-      e.preventDefault();
-      pin();
+    if (dy < 0) {
+      if (y <= min + 1) {
+        e.preventDefault();
+        if (step > OPEN && !busy && dy < -20) {
+          touchY = e.touches[0].clientY;
+          advance(-1);
+        }
+        return;
+      }
+      if (y + dy < min) {
+        e.preventDefault();
+        el.scrollTop = min;
+      }
     }
   }
 
@@ -242,51 +211,19 @@ import { initBook } from "./book3d.js";
     const down = e.key === "ArrowDown" || e.key === "PageDown" || e.key === " ";
     const up = e.key === "ArrowUp" || e.key === "PageUp";
     if (!down && !up) return;
-    const dir = down ? 1 : -1;
+    const { min, max } = bounds();
+    const el = scroller();
+    const y = el.scrollTop;
 
-    if (frozen) {
-      if (busy) {
-        e.preventDefault();
-        return;
-      }
-      if (dir > 0) {
-        if (step < LAST) {
-          e.preventDefault();
-          advance(1);
-        } else unfreeze();
-      } else if (step > OPEN) {
-        e.preventDefault();
-        advance(-1);
-      } else unfreeze();
+    if (down && y >= max - 1) {
+      e.preventDefault();
+      if (step < LAST) advance(1);
       return;
     }
-
-    if (dir > 0 && step < LAST) {
-      refreshDock();
-      if (scroller().scrollTop >= dockY - 80) {
-        e.preventDefault();
-        pin();
-      }
-      return;
+    if (up && y <= min + 1) {
+      e.preventDefault();
+      if (step > OPEN) advance(-1);
     }
-    if (dir < 0 && step > OPEN) {
-      refreshDock();
-      if (scroller().scrollTop <= dockY + 80) {
-        e.preventDefault();
-        pin();
-      }
-    }
-  }
-
-  function onScroll() {
-    if (frozen) {
-      pin();
-      return;
-    }
-    refreshDock();
-    const y = scroller().scrollTop;
-    if (step < LAST && y > dockY + 2) pin();
-    if (step > OPEN && y < dockY - 2) pin();
   }
 
   tabs.forEach((btn) => {
@@ -298,25 +235,18 @@ import { initBook } from "./book3d.js";
     });
   });
 
-  document.querySelectorAll(".bar a[href^='#']").forEach((a) => {
-    a.addEventListener("click", () => {
-      if (a.getAttribute("href") === "#projects") return;
-      unfreeze();
-    });
-  });
-
   window.addEventListener("wheel", onWheel, { passive: false, capture: true });
   window.addEventListener("touchstart", onTouchStart, { passive: true, capture: true });
   window.addEventListener("touchmove", onTouchMove, { passive: false, capture: true });
   window.addEventListener("keydown", onKey, { capture: true });
-  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("scroll", clamp, { passive: true });
+  window.addEventListener("resize", clamp);
 
   const params = new URLSearchParams(location.search);
   const rawBook = params.get("book");
   const forced = rawBook == null ? NaN : Number(rawBook);
   if (Number.isFinite(forced) && forced >= OPEN && forced <= LAST) {
     applyStep(forced, false);
-    book.scrollIntoView({ block: "center" });
   } else {
     applyStep(OPEN, false);
   }
