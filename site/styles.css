@@ -1,22 +1,41 @@
 @font-face {
-  font-family: Montserrat;
-  src: url("fonts/montserrat-latin.woff2") format("woff2");
-  font-weight: 400 700;
+  font-family: "EB Garamond";
+  src: url("fonts/ebgaramond.woff2") format("woff2");
+  font-weight: 500 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "EB Garamond";
+  src: url("fonts/ebgaramond-italic.woff2") format("woff2");
+  font-weight: 500 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Cinzel;
+  src: url("fonts/cinzel.woff2") format("woff2");
+  font-weight: 600 700;
   font-style: normal;
   font-display: swap;
 }
 
 :root {
-  --bg: #f3efe6;
-  --surface: #fffaf3;
-  --ink: #121826;
-  --muted: #5c5850;
-  --line: #e4ddd0;
-  --accent: #1a2744;
-  --accent-ink: #f3efe6;
+  --bg: #e8dcc6;
+  --surface: #f6eedc;
+  --ink: #1a1108;
+  --muted: #6a5344;
+  --line: #d3c3a4;
+  --accent: #6b1523;
+  --accent-ink: #f6eedc;
+  --gold: #c5a15e;
   --max: 1080px;
   --bar: 64px;
-  --sans: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  --serif: "EB Garamond", "Palatino Linotype", Palatino, serif;
+  --display: Cinzel, "Palatino Linotype", serif;
+  --sans: "EB Garamond", "Palatino Linotype", Palatino, serif;
 }
 
 *,
@@ -32,10 +51,15 @@ html {
 
 body {
   margin: 0;
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse 80% 40% at 50% -10%, rgba(107, 21, 35, 0.14), transparent 55%),
+    url("assets/hall/parchment.jpg");
+  background-size: auto, 520px;
+  background-attachment: fixed;
   color: var(--ink);
-  font-family: var(--sans);
-  font-size: 16.5px;
+  font-family: var(--serif);
+  font-size: 18px;
   line-height: 1.55;
 }
 
@@ -52,9 +76,9 @@ a {
 h1,
 h2,
 h3 {
-  font-family: var(--sans);
+  font-family: var(--serif);
   font-weight: 700;
-  letter-spacing: -0.035em;
+  letter-spacing: 0.01em;
   line-height: 1.12;
   margin: 0;
 }
@@ -91,9 +115,17 @@ p {
 }
 
 .cuff {
-  height: 12px;
-  background: url("assets/cuff-tile.png") center / auto 28px repeat-x;
-  background-position: center 40%;
+  height: 8px;
+  background:
+    linear-gradient(
+      180deg,
+      #3a0c14 0%,
+      var(--accent) 35%,
+      var(--gold) 48%,
+      var(--gold) 52%,
+      var(--accent) 65%,
+      #3a0c14 100%
+    );
 }
 
 .bar {
@@ -106,29 +138,61 @@ p {
   align-items: center;
   gap: 20px;
   padding: 0 24px;
-  background: color-mix(in srgb, var(--bg) 92%, white);
-  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 88%, var(--accent));
+  border-bottom: 1px solid var(--gold);
 }
 
 .bar-name {
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  font-family: var(--display);
   font-weight: 700;
-  font-size: 1.05rem;
-  letter-spacing: -0.03em;
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   text-decoration: none;
-}
-
-.bar-mark {
-  width: 22px;
-  height: auto;
 }
 
 .bar-nav {
   display: flex;
   gap: 18px;
-  font-size: 0.88rem;
+  font-family: var(--display);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.bar-mark {
+  width: 28px;
+  height: auto;
+}
+
+.ivy {
+  position: fixed;
+  width: min(280px, 38vw);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.55;
+}
+
+.ivy-tl {
+  top: 52px;
+  left: 0;
+}
+
+.ivy-br {
+  right: 0;
+  bottom: 48px;
+  transform: rotate(180deg);
+}
+
+.hall-div {
+  display: block;
+  width: min(640px, 86%);
+  height: auto;
+  margin: 8px auto 0;
+  pointer-events: none;
 }
 
 .bar-nav a {
@@ -218,16 +282,18 @@ a:focus-visible,
 }
 
 .kicker {
-  font-size: 0.78rem;
-  letter-spacing: 0.12em;
+  font-family: var(--display);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--accent);
   margin-bottom: 14px;
 }
 
 .subhead {
   margin-top: 18px;
   max-width: 42ch;
+  font-style: italic;
 }
 
 .hero-meta {
@@ -260,7 +326,7 @@ a:focus-visible,
 }
 
 .btn-fill:hover {
-  background: #0d1422;
+  background: #3a0c14;
 }
 
 .btn-line {
@@ -326,10 +392,11 @@ a:focus-visible,
 }
 
 .locker-meta {
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
+  font-family: var(--display);
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  opacity: 0.7;
+  opacity: 0.75;
   margin-bottom: 10px;
 }
 
@@ -487,7 +554,7 @@ a:focus-visible,
   align-items: center;
   gap: 6px;
   padding: 10px 14px;
-  background: #121a30;
+  background: #3a0c14;
 }
 
 .term-bar span {
