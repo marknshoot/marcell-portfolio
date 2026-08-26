@@ -4,17 +4,18 @@
 
   const folio = document.getElementById("folio");
   const book = document.getElementById("book");
+  const hover = document.getElementById("book-hover");
   const countEl = document.getElementById("folio-count");
-  if (!folio || !book) return;
+  if (!folio || !book || !hover) return;
 
   document.documentElement.classList.add("book-ok");
 
-  const floats = [...book.querySelectorAll(".book-float")];
-  const tabs = [...book.querySelectorAll(".book-chapters button")];
+  const floats = [...hover.querySelectorAll(".book-float")];
+  const leaves = [...book.querySelectorAll(".book-leaf")];
+  const tabs = [...document.querySelectorAll(".book-chapters button")];
   const n = floats.length;
   let page = 0;
   let turning = false;
-  let open = false;
   let queued = null;
 
   function paintTabs() {
@@ -24,35 +25,40 @@
     if (countEl) countEl.textContent = `${page + 1} / ${n}`;
   }
 
-  function showFloats() {
+  function showFloat(on) {
     floats.forEach((el, i) => {
-      const on = i === page;
-      el.hidden = !on;
-      el.classList.toggle("is-on", on);
+      const show = on && i === page;
+      el.hidden = !show;
+      el.classList.toggle("is-on", show);
+    });
+  }
+
+  function turnLeaves(index) {
+    leaves.forEach((leaf, i) => {
+      leaf.classList.toggle("is-turned", i <= index);
     });
   }
 
   function setPage(next, { flip = true } = {}) {
     next = Math.max(0, Math.min(n - 1, next));
-    if (next === page) {
-      showFloats();
+    if (next === page && !turning) {
+      turnLeaves(page);
+      showFloat(true);
       paintTabs();
       return;
     }
     if (turning) {
       queued = next;
-      page = next;
-      paintTabs();
       return;
     }
-    const prev = page;
+
     page = next;
     paintTabs();
 
     const finish = () => {
-      showFloats();
       book.classList.remove("is-turning");
       turning = false;
+      showFloat(true);
       if (queued != null && queued !== page) {
         const q = queued;
         queued = null;
@@ -63,13 +69,18 @@
     };
 
     if (!flip) {
+      turnLeaves(page);
       finish();
       return;
     }
+
     turning = true;
     book.classList.add("is-turning");
-    book.classList.toggle("is-back", page < prev);
-    window.setTimeout(finish, 180);
+    showFloat(false);
+    window.setTimeout(() => {
+      turnLeaves(page);
+    }, 40);
+    window.setTimeout(finish, 320);
   }
 
   function progress() {
@@ -85,33 +96,12 @@
     return Math.min(n - 1, Math.floor(p * n));
   }
 
-  function tick() {
-    if (!open && book.getBoundingClientRect().top < window.innerHeight * 0.88) {
-      open = true;
-      book.classList.add("is-open");
-    }
-    if (!turning) setPage(pageFromScroll(), { flip: true });
-  }
-
-  if ("IntersectionObserver" in window) {
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          open = true;
-          book.classList.add("is-open");
-        }
-      },
-      { threshold: 0.15 }
-    );
-    io.observe(book);
-  }
-
   let raf = 0;
   function onScroll() {
     if (raf) return;
     raf = requestAnimationFrame(() => {
       raf = 0;
-      tick();
+      if (!turning) setPage(pageFromScroll(), { flip: true });
     });
   }
 
@@ -132,5 +122,4 @@
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", onScroll, { passive: true });
   setPage(pageFromScroll(), { flip: false });
-  onScroll();
 })();

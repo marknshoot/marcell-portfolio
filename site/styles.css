@@ -376,104 +376,29 @@ html.book-ok .plays > .playboard {
   position: sticky;
   top: var(--bar);
   z-index: 3;
-  padding: 8px 0 12px;
+  padding: 4px 0 16px;
   background: var(--bg);
 }
 
 .folio-spacer {
-  height: 88vh;
-}
-
-.book {
-  perspective: 1400px;
-}
-
-.book-board {
-  display: grid;
-  grid-template-columns: 12px minmax(0, 0.92fr) minmax(0, 1.08fr) 12px;
-  min-height: 390px;
-  transform-origin: 50% 100%;
-  transform: rotateX(18deg) scale(0.97);
-  transform-style: preserve-3d;
-  transition: transform 280ms ease;
-  filter: drop-shadow(0 18px 28px rgba(18, 24, 38, 0.14));
-}
-
-.book.is-open .book-board {
-  transform: rotateX(4deg) scale(1);
-}
-
-.book-cover {
-  background: var(--accent);
-}
-
-.book-cover-l {
-  border-radius: 4px 0 0 4px;
-}
-
-.book-cover-r {
-  border-radius: 0 4px 4px 0;
-}
-
-.book-leaf {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  min-width: 0;
-}
-
-.book-leaf-l {
-  border-right: 0;
-  padding: 22px 20px 24px 22px;
-  background:
-    repeating-linear-gradient(
-      var(--surface) 0 32px,
-      color-mix(in srgb, var(--accent) 7%, var(--surface)) 32px 33px
-    );
-  transform-origin: 100% 50%;
-  transform: rotateY(14deg);
-  transition: transform 280ms ease;
-}
-
-.book-leaf-r {
-  position: relative;
-  border-left: 0;
-  box-shadow: inset 18px 0 22px -18px rgba(18, 24, 38, 0.18);
-  transform-origin: 0 50%;
-  transform: rotateY(-14deg);
-  transition: transform 280ms ease;
-  overflow: hidden;
-}
-
-.book.is-open .book-leaf-l,
-.book.is-open .book-leaf-r {
-  transform: none;
-}
-
-.book-index {
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 14px;
+  height: 90vh;
 }
 
 .book-chapters {
   list-style: none;
-  margin: 0;
+  margin: 0 0 8px;
   padding: 0;
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-wrap: wrap;
+  gap: 6px 4px;
 }
 
 .book-chapters button {
   appearance: none;
-  width: 100%;
-  text-align: left;
   background: transparent;
   border: 0;
-  border-left: 2px solid transparent;
-  padding: 10px 8px 10px 10px;
+  border-bottom: 2px solid transparent;
+  padding: 8px 10px;
   font: inherit;
   font-weight: 700;
   letter-spacing: -0.03em;
@@ -482,95 +407,185 @@ html.book-ok .plays > .playboard {
 }
 
 .book-chapters button span {
-  display: inline-block;
-  width: 1.6rem;
   font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--muted);
+  margin-right: 4px;
 }
 
 .book-chapters button[aria-current="true"] {
   color: var(--ink);
-  border-left-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 6%, transparent);
+  border-bottom-color: var(--accent);
 }
 
-.book-float {
+.book {
+  position: relative;
+  height: 540px;
+  overflow: visible;
+  perspective: 1800px;
+  perspective-origin: 50% 8%;
+}
+
+.book-bed {
   position: absolute;
-  left: 18px;
-  right: 18px;
-  top: 18px;
-  bottom: 18px;
-  padding: 20px 20px 18px;
-  background: color-mix(in srgb, var(--surface) 88%, white);
-  border: 1px solid var(--line);
-  box-shadow: 0 14px 30px rgba(18, 24, 38, 0.1);
-  transform: translateY(10px);
-  opacity: 0;
-  overflow: auto;
+  inset: 90px 0 8px;
+  display: grid;
+  grid-template-columns: 16px 1fr 12px 1fr 16px;
+  transform: rotateX(50deg) scaleY(1.38);
+  transform-origin: 50% 70%;
+  transform-style: preserve-3d;
+  filter: drop-shadow(0 36px 28px rgba(18, 24, 38, 0.2));
+}
+
+.book-cover {
+  background: var(--accent);
+}
+
+.book-cover-l {
+  border-radius: 3px 0 0 3px;
+}
+
+.book-cover-r {
+  border-radius: 0 3px 3px 0;
+}
+
+.book-spine {
+  background: color-mix(in srgb, var(--accent) 82%, black);
+  box-shadow: 0 0 8px rgba(18, 24, 38, 0.35);
+}
+
+.book-paper {
+  background:
+    repeating-linear-gradient(
+      var(--surface) 0 28px,
+      color-mix(in srgb, var(--accent) 6%, var(--surface)) 28px 29px
+    );
+}
+
+.book-paper-l {
+  box-shadow: inset -16px 0 18px -16px rgba(18, 24, 38, 0.2);
+}
+
+.book-paper-r {
+  box-shadow: inset 16px 0 18px -16px rgba(18, 24, 38, 0.2);
+}
+
+.book-leaf {
+  position: absolute;
+  top: 6px;
+  left: 14px;
+  width: calc(50% - 19px);
+  height: calc(100% - 12px);
+  transform-origin: 100% 50%;
+  transform-style: preserve-3d;
+  transform: rotateY(0deg);
+  transition: transform 280ms ease-in-out;
+  z-index: 3;
+}
+
+.book-leaf.is-turned {
+  transform: rotateY(-178deg);
+  z-index: 1;
+}
+
+.book-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--line) 80%, var(--accent));
+}
+
+.book-face-front {
+  background:
+    linear-gradient(90deg, transparent 0, rgba(18, 24, 38, 0.06) 100%),
+    repeating-linear-gradient(
+      var(--surface) 0 28px,
+      color-mix(in srgb, var(--accent) 6%, var(--surface)) 28px 29px
+    );
+}
+
+.book-face-back {
+  transform: rotateY(180deg);
+  background:
+    linear-gradient(270deg, transparent 0, rgba(18, 24, 38, 0.07) 100%),
+    var(--surface);
+}
+
+.book-leaf[data-leaf="0"] {
+  z-index: 3;
+}
+.book-leaf[data-leaf="1"] {
+  z-index: 4;
+}
+.book-leaf[data-leaf="2"] {
+  z-index: 5;
+}
+.book-leaf[data-leaf="0"].is-turned {
+  z-index: 2;
+}
+.book-leaf[data-leaf="1"].is-turned {
+  z-index: 3;
+}
+.book-leaf[data-leaf="2"].is-turned {
+  z-index: 4;
+}
+
+.book-hover {
+  position: absolute;
+  left: 50%;
+  top: 56px;
+  z-index: 6;
+  width: min(380px, 62%);
+  transform: translate(-50%, 0);
   pointer-events: none;
 }
 
+.book-float {
+  display: none;
+  padding: 18px 20px 16px;
+  background: color-mix(in srgb, var(--surface) 94%, white);
+  border: 1px solid var(--line);
+  box-shadow: 0 18px 36px rgba(18, 24, 38, 0.16);
+  opacity: 0;
+}
+
 .book-float.is-on {
+  display: block;
   opacity: 1;
-  transform: translateY(-8px);
+  transform: translateY(-6px);
   pointer-events: auto;
-  transition: transform 180ms ease, opacity 180ms ease;
+  animation: float-in 180ms ease-out;
+}
+
+.book.is-turning .book-float.is-on {
+  opacity: 0;
+  transform: translateY(8px);
+  animation: none;
+}
+
+@keyframes float-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-6px);
+  }
 }
 
 .book-float h3 {
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .book-float .tag {
   margin-top: 0;
 }
 
-.book-turn {
-  position: absolute;
-  inset: 0;
-  transform-origin: 0 50%;
-  background: linear-gradient(90deg, #fffaf3, #efe8db);
-  pointer-events: none;
-  opacity: 0;
-  z-index: 2;
-}
-
-.book.is-turning .book-turn {
-  animation: leaf-turn 200ms ease-in forwards;
-}
-
-.book.is-turning.is-back .book-turn {
-  animation-name: leaf-turn-back;
-}
-
-@keyframes leaf-turn {
-  from {
-    opacity: 1;
-    transform: rotateY(0);
-  }
-  to {
-    opacity: 1;
-    transform: rotateY(-70deg);
-  }
-}
-
-@keyframes leaf-turn-back {
-  from {
-    opacity: 1;
-    transform: rotateY(-70deg);
-  }
-  to {
-    opacity: 1;
-    transform: rotateY(0);
-  }
-}
-
 .folio-hint {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  margin-top: 12px;
+  margin-top: 4px;
   font-size: 0.8rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1100,65 +1115,27 @@ html.book-ok .plays > .playboard {
     padding: 52px 0;
   }
 
-  .book-board {
-    grid-template-columns: 8px 1fr 8px;
-    grid-template-rows: auto minmax(300px, 1fr);
-    min-height: 0;
-    transform: none;
+  .book {
+    height: 480px;
   }
 
-  .book-cover-l {
-    grid-row: 1 / 3;
+  .book-bed {
+    inset: 110px 0 4px;
+    transform: rotateX(46deg) scaleY(1.28);
   }
 
-  .book-leaf-l {
-    grid-column: 2;
-    grid-row: 1;
-    transform: none;
-    padding: 12px 12px 4px;
-    background: var(--surface);
-  }
-
-  .book-leaf-r {
-    grid-column: 2;
-    grid-row: 2;
-    transform: none;
-    min-height: 300px;
-  }
-
-  .book-cover-r {
-    grid-row: 1 / 3;
-  }
-
-  .book-index {
-    display: none;
-  }
-
-  .book-chapters {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0;
+  .book-hover {
+    width: min(92%, 340px);
+    top: 36px;
   }
 
   .book-chapters button {
-    width: auto;
-    border-left: 0;
-    border-bottom: 2px solid transparent;
-    padding: 8px 10px;
     font-size: 0.82rem;
-  }
-
-  .book-chapters button[aria-current="true"] {
-    border-left-color: transparent;
-    border-bottom-color: var(--accent);
-  }
-
-  .folio-sticky {
-    padding-top: 4px;
+    padding: 8px 8px;
   }
 
   .folio-spacer {
-    height: 72vh;
+    height: 78vh;
   }
 
   .pet,
