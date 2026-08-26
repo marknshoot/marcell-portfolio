@@ -1,4 +1,4 @@
-import { initBook } from "./book3d.js?v=nogue";
+import { initBook } from "./book3d.js?v=noq2";
 
 (() => {
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -38,6 +38,7 @@ import { initBook } from "./book3d.js?v=nogue";
   let acc = 0;
   let ignoreUntil = 0;
   let unlockTimer = 0;
+  let fresh = true;
 
   function paintTabs() {
     tabs.forEach((btn, i) => {
@@ -56,14 +57,18 @@ import { initBook } from "./book3d.js?v=nogue";
     });
   }
 
-  function turning() {
-    return busy || performance.now() < ignoreUntil || (book3d && book3d.isBusy());
+  function playing() {
+    return busy || (book3d && book3d.isBusy());
+  }
+
+  function locked() {
+    return playing() || performance.now() < ignoreUntil;
   }
 
   function lockTurn() {
     busy = true;
     acc = 0;
-    ignoreUntil = 0;
+    fresh = true;
     book.classList.add("is-turning");
     window.clearTimeout(unlockTimer);
   }
@@ -71,7 +76,8 @@ import { initBook } from "./book3d.js?v=nogue";
   function unlockTurn() {
     busy = false;
     acc = 0;
-    ignoreUntil = performance.now() + 90;
+    fresh = true;
+    ignoreUntil = performance.now() + 520;
     book.classList.remove("is-turning");
   }
 
@@ -110,8 +116,7 @@ import { initBook } from "./book3d.js?v=nogue";
   }
 
   function applyStep(next, animate) {
-    if (busy && next !== step) return;
-    if (book3d && book3d.isBusy() && next !== step) return;
+    if (playing() && next !== step) return;
     step = next;
     const showCard = step >= PAGE0 && step <= PAGE2;
     if (showCard) {
@@ -147,8 +152,28 @@ import { initBook } from "./book3d.js?v=nogue";
     clamp();
   }
 
+  function wantStep(dir, px) {
+    if (playing() || performance.now() < ignoreUntil) {
+      acc = 0;
+      return;
+    }
+    if (fresh) {
+      fresh = false;
+      acc = 0;
+      return;
+    }
+    acc += px;
+    if (dir > 0 && acc > 56) {
+      acc = 0;
+      advance(1);
+    } else if (dir < 0 && acc < -56) {
+      acc = 0;
+      advance(-1);
+    }
+  }
+
   function advance(dir) {
-    if (turning()) return;
+    if (playing()) return;
     const next = step + dir;
     if (next < OPEN || next > LAST) return;
     acc = 0;
@@ -164,14 +189,7 @@ import { initBook } from "./book3d.js?v=nogue";
     if (px > 0) {
       if (y >= max - 1) {
         e.preventDefault();
-        if (turning()) {
-          acc = 0;
-          return;
-        }
-        if (step < LAST) {
-          acc += px;
-          if (acc > 40) advance(1);
-        }
+        if (step < LAST) wantStep(1, px);
         return;
       }
       if (y + px > max) {
@@ -185,14 +203,7 @@ import { initBook } from "./book3d.js?v=nogue";
     if (px < 0) {
       if (y <= min + 1) {
         e.preventDefault();
-        if (turning()) {
-          acc = 0;
-          return;
-        }
-        if (step > OPEN) {
-          acc += px;
-          if (acc < -40) advance(-1);
-        }
+        if (step > OPEN) wantStep(-1, px);
         return;
       }
       if (y + px < min) {
@@ -217,14 +228,7 @@ import { initBook } from "./book3d.js?v=nogue";
     if (dy > 0) {
       if (y >= max - 1) {
         e.preventDefault();
-        if (turning()) {
-          acc = 0;
-          return;
-        }
-        if (step < LAST && dy > 20) {
-          touchY = e.touches[0].clientY;
-          advance(1);
-        }
+        if (step < LAST) wantStep(1, dy);
         return;
       }
       if (y + dy > max) {
@@ -237,14 +241,7 @@ import { initBook } from "./book3d.js?v=nogue";
     if (dy < 0) {
       if (y <= min + 1) {
         e.preventDefault();
-        if (turning()) {
-          acc = 0;
-          return;
-        }
-        if (step > OPEN && dy < -20) {
-          touchY = e.touches[0].clientY;
-          advance(-1);
-        }
+        if (step > OPEN) wantStep(-1, dy);
         return;
       }
       if (y + dy < min) {
@@ -264,26 +261,18 @@ import { initBook } from "./book3d.js?v=nogue";
 
     if (down && y >= max - 1) {
       e.preventDefault();
-      if (turning()) {
-        acc = 0;
-        return;
-      }
-      if (step < LAST) advance(1);
+      if (step < LAST) wantStep(1, 80);
       return;
     }
     if (up && y <= min + 1) {
       e.preventDefault();
-      if (turning()) {
-        acc = 0;
-        return;
-      }
-      if (step > OPEN) advance(-1);
+      if (step > OPEN) wantStep(-1, -80);
     }
   }
 
   tabs.forEach((btn) => {
     btn.addEventListener("click", () => {
-      if (turning()) return;
+      if (playing() || performance.now() < ignoreUntil) return;
       const i = Number(btn.getAttribute("data-page"));
       if (!Number.isFinite(i)) return;
       applyStep(PAGE0 + i, true);
