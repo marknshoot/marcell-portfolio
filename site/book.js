@@ -38,6 +38,8 @@ import { initBook } from "./book3d.js";
   let busy = false;
   let page = 0;
   let frozen = false;
+  let lastY = window.scrollY;
+  let ignoreDownUntil = 0;
 
   function paintTabs() {
     tabs.forEach((btn, i) => {
@@ -126,27 +128,30 @@ import { initBook } from "./book3d.js";
     applyStep(next, true);
   }
 
+  function releaseUp() {
+    unfreeze();
+    ignoreDownUntil = performance.now() + 220;
+  }
+
   function onWheel(e) {
     const dy = e.deltaY;
     const dir = dy > 0 ? 1 : -1;
 
-    if (dir > 0 && holding()) {
+    if (dir < 0) {
+      releaseUp();
+      return;
+    }
+
+    if (performance.now() < ignoreDownUntil) return;
+
+    if (holding()) {
       const remain = capY() - window.scrollY;
       if (frozen || atCap() || remain <= Math.max(24, Math.abs(dy))) {
         const already = frozen || atCap() || remain <= 24;
         stopDown(e);
         if (already && Math.abs(dy) >= 8) advance(1);
       }
-      return;
     }
-
-    if (dir < 0 && (frozen || atCap()) && step > OPEN) {
-      e.preventDefault();
-      if (Math.abs(dy) >= 8) advance(-1);
-      return;
-    }
-
-    if (dir < 0 && frozen && step === OPEN) unfreeze();
   }
 
   let touchY = null;
@@ -158,7 +163,14 @@ import { initBook } from "./book3d.js";
     const dy = touchY - e.touches[0].clientY;
     const dir = dy > 0 ? 1 : -1;
 
-    if (dir > 0 && holding()) {
+    if (dir < 0) {
+      releaseUp();
+      return;
+    }
+
+    if (performance.now() < ignoreDownUntil) return;
+
+    if (holding()) {
       const remain = capY() - window.scrollY;
       if (frozen || atCap() || remain <= Math.max(28, Math.abs(dy))) {
         stopDown(e);
@@ -167,19 +179,7 @@ import { initBook } from "./book3d.js";
           advance(1);
         }
       }
-      return;
     }
-
-    if (dir < 0 && (frozen || atCap()) && step > OPEN) {
-      e.preventDefault();
-      if (Math.abs(dy) >= 24) {
-        touchY = e.touches[0].clientY;
-        advance(-1);
-      }
-      return;
-    }
-
-    if (dir < 0 && frozen && step === OPEN) unfreeze();
   }
 
   function onKey(e) {
@@ -187,23 +187,38 @@ import { initBook } from "./book3d.js";
     const up = e.key === "ArrowUp" || e.key === "PageUp";
     if (!down && !up) return;
 
-    if (down && holding() && (frozen || atCap() || capY() - window.scrollY < 64)) {
+    if (up) {
+      releaseUp();
+      return;
+    }
+
+    if (performance.now() < ignoreDownUntil) return;
+
+    if (holding() && (frozen || atCap() || capY() - window.scrollY < 64)) {
       stopDown(e);
       advance(1);
-      return;
     }
-    if (up && (frozen || atCap()) && step > OPEN) {
-      e.preventDefault();
-      advance(-1);
-      return;
-    }
-    if (up && frozen && step === OPEN) unfreeze();
   }
 
   function onScroll() {
-    if (frozen) return;
+    const y = window.scrollY;
+    const goingDown = y > lastY + 1;
+    const goingUp = y < lastY - 1;
+    lastY = y;
+
     const r = sticky.getBoundingClientRect();
-    if (r.top > window.innerHeight - 24 && step !== OPEN) applyStep(OPEN, false);
+    if (goingUp && r.top > window.innerHeight - 24 && step !== OPEN) {
+      applyStep(OPEN, false);
+    }
+
+    if (goingUp) {
+      if (frozen) unfreeze();
+      return;
+    }
+
+    if (!goingDown) return;
+    if (performance.now() < ignoreDownUntil) return;
+    if (frozen) return;
     if (holding() && r.top <= BAR + 18) freeze();
   }
 
