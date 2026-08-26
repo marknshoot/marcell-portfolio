@@ -18,6 +18,8 @@
       "projects.kicker": "Bukti",
       "projects.title": "Proyek pilihan",
       "projects.helper": "Tiga proyek utama. Metode dan angka lengkap ada di README GitHub setelah reponya publik.",
+      "book.index": "Tiga bab",
+      "book.hint": "Gulir — tiga halaman ikut berganti",
       "p1.status": "Sedang dikerjakan",
       "p1.body": "Toko daring dengan hybrid search (BM25 + embeddings), rekomendasi sesi, dan copilot yang memakai tools, dalam satu stack. Masih dikerjakan — angka eval tidak ditampilkan sebelum diukur.",
       "p2.status": "Selesai",
