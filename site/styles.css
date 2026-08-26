@@ -429,20 +429,19 @@ html.book-ok .plays > .playboard {
 }
 
 .book {
-  --cover-w: 240px;
-  --cover-h: 180px;
   position: relative;
-  height: 440px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  perspective: 1400px;
-  perspective-origin: 50% 45%;
+  width: min(820px, 100%);
+  margin: 0 auto;
 }
 
-.book:not(.is-shut) {
-  align-items: flex-end;
-  padding-bottom: 28px;
+.book-stage {
+  position: relative;
+}
+
+.book-shot {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
 .book-shadow {
@@ -699,20 +698,20 @@ html.book-ok .plays > .playboard {
 
 .holo-beam {
   position: absolute;
-  left: 50%;
-  top: 52%;
-  z-index: 7;
-  width: 180px;
-  height: 120px;
-  transform: translate(-50%, -100%);
+  left: 53%;
+  top: 22%;
+  z-index: 2;
+  width: 22%;
+  height: 28%;
+  transform: translateX(-50%);
   pointer-events: none;
   background: linear-gradient(
     to top,
-    color-mix(in srgb, var(--accent) 45%, transparent),
-    rgba(243, 239, 230, 0.04)
+    color-mix(in srgb, var(--accent) 40%, transparent),
+    rgba(243, 239, 230, 0.02)
   );
-  clip-path: polygon(42% 100%, 58% 100%, 100% 0, 0 0);
-  opacity: 0.5;
+  clip-path: polygon(40% 100%, 60% 100%, 100% 0, 0 0);
+  opacity: 0.55;
 }
 
 .book.is-turning .holo-beam {
@@ -721,10 +720,10 @@ html.book-ok .plays > .playboard {
 
 .book-hover {
   position: absolute;
-  left: 50%;
-  top: 6px;
-  z-index: 8;
-  width: min(280px, 44%);
+  left: 53%;
+  top: 14%;
+  z-index: 3;
+  width: min(280px, 38%);
   transform: translateX(-50%);
   pointer-events: none;
 }
@@ -1352,15 +1351,9 @@ html.book-ok .plays > .playboard {
     padding: 52px 0;
   }
 
-  .book {
-    --cover-w: 150px;
-    --cover-h: 150px;
-    height: 380px;
-  }
-
   .book-hover {
-    width: min(88%, 280px);
-    top: 4px;
+    width: min(72%, 240px);
+    top: 10%;
   }
 
   .foil-cover {

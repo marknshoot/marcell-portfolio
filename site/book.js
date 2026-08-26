@@ -12,10 +12,18 @@
   document.documentElement.classList.add("book-ok");
 
   const floats = [...hover.querySelectorAll(".book-float")];
-  const leaves = [...book.querySelectorAll(".leaf")];
+  const shot = document.getElementById("book-shot");
   const tabs = [...document.querySelectorAll(".book-chapters button")];
+  const SHOT = {
+    shut: "assets/book/closed.jpg",
+    open: "assets/book/open.jpg",
+    flip: "assets/book/flip.jpg",
+  };
+  Object.values(SHOT).forEach((src) => {
+    const pre = new Image();
+    pre.src = src;
+  });
   const n = floats.length;
-  const PER = 3;
   const OPEN = 0;
   const PAGE0 = 1;
   const PAGE1 = 2;
@@ -46,24 +54,6 @@
     });
   }
 
-  function turnLeaves(index, stagger) {
-    const count = index == null ? 0 : (index + 1) * PER;
-    leaves.forEach((leaf, i) => {
-      const should = i < count;
-      const on = leaf.classList.contains("is-turned");
-      if (should === on) return;
-      const apply = () => {
-        leaf.classList.toggle("is-turned", should);
-        leaf.classList.add("is-flipping");
-        window.setTimeout(() => leaf.classList.remove("is-flipping"), 560);
-      };
-      if (stagger) {
-        const delay = Math.abs((should ? i : count) - (should ? count - PER : i)) * 55;
-        window.setTimeout(apply, Math.max(0, delay));
-      } else apply();
-    });
-  }
-
   function cooldown(ms) {
     busy = true;
     book.classList.add("is-turning");
@@ -75,20 +65,32 @@
 
   function applyStep(next, animate) {
     step = next;
+    if (!shot) return;
     if (step === OPEN || step === SHUT) {
       book.classList.add("is-shut");
       showFloat(false);
-      turnLeaves(-1, false);
       page = 0;
-    } else {
-      book.classList.remove("is-shut");
-      page = step - PAGE0;
-      showFloat(false);
-      turnLeaves(page, animate);
-      window.setTimeout(() => showFloat(true), animate ? 520 : 0);
+      shot.src = SHOT.shut;
+      paintTabs();
+      cooldown(animate ? 700 : 0);
+      return;
     }
+    book.classList.remove("is-shut");
+    page = step - PAGE0;
+    showFloat(false);
     paintTabs();
-    cooldown(animate ? 860 : 0);
+    if (animate) {
+      shot.src = SHOT.flip;
+      cooldown(900);
+      window.setTimeout(() => {
+        shot.src = SHOT.open;
+        showFloat(true);
+      }, 520);
+    } else {
+      shot.src = SHOT.open;
+      showFloat(true);
+      cooldown(0);
+    }
   }
 
   function inGate() {
