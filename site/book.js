@@ -11,9 +11,10 @@
   document.documentElement.classList.add("book-ok");
 
   const floats = [...hover.querySelectorAll(".book-float")];
-  const leaves = [...book.querySelectorAll(".book-leaf")];
+  const leaves = [...book.querySelectorAll(".leaf")];
   const tabs = [...document.querySelectorAll(".book-chapters button")];
   const n = floats.length;
+  const PER = 3;
   let page = 0;
   let turning = false;
   let queued = null;
@@ -33,16 +34,30 @@
     });
   }
 
-  function turnLeaves(index) {
+  function turnLeaves(index, stagger) {
+    const count = (index + 1) * PER;
     leaves.forEach((leaf, i) => {
-      leaf.classList.toggle("is-turned", i <= index);
+      const should = i < count;
+      const on = leaf.classList.contains("is-turned");
+      if (should === on) return;
+      const apply = () => {
+        leaf.classList.toggle("is-turned", should);
+        leaf.classList.add("is-flipping");
+        window.setTimeout(() => leaf.classList.remove("is-flipping"), 560);
+      };
+      if (stagger) {
+        const delay = (should ? i - (count - PER) : count - i) * 55;
+        window.setTimeout(apply, Math.max(0, delay));
+      } else {
+        apply();
+      }
     });
   }
 
   function setPage(next, { flip = true } = {}) {
     next = Math.max(0, Math.min(n - 1, next));
     if (next === page && !turning) {
-      turnLeaves(page);
+      turnLeaves(page, false);
       showFloat(true);
       paintTabs();
       return;
@@ -69,7 +84,7 @@
     };
 
     if (!flip) {
-      turnLeaves(page);
+      turnLeaves(page, false);
       finish();
       return;
     }
@@ -77,10 +92,8 @@
     turning = true;
     book.classList.add("is-turning");
     showFloat(false);
-    window.setTimeout(() => {
-      turnLeaves(page);
-    }, 40);
-    window.setTimeout(finish, 320);
+    turnLeaves(page, true);
+    window.setTimeout(finish, 720);
   }
 
   function progress() {
