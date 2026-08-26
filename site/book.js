@@ -48,46 +48,8 @@ import { initBook } from "./book3d.js";
   function showFloat(on) {
     const showPage = on && step >= PAGE0 && step <= PAGE2;
     floats.forEach((el, i) => {
-      const show = showPage && i === page;
-      el.classList.toggle("is-on", show);
+      el.classList.toggle("is-on", showPage && i === page);
     });
-  }
-
-  const html = document.documentElement;
-  const skipFs = new URLSearchParams(location.search).has("book");
-  let fs = false;
-  let coolExit = false;
-
-  function setFs(on) {
-    if (skipFs) return;
-    fs = on;
-    html.classList.toggle("book-fs", on);
-  }
-
-  function tryEnter(dir) {
-    if (fs || coolExit || skipFs) return;
-    if (dir >= 0 && step === SHUT) applyStep(OPEN, false);
-    if (dir < 0 && (step === OPEN || step === PAGE0)) applyStep(SHUT, false);
-    setFs(true);
-  }
-
-  function tryExit(dir) {
-    if (!fs) return false;
-    setFs(false);
-    coolExit = true;
-    window.requestAnimationFrame(() => {
-      if (dir > 0) {
-        const after = document.getElementById("skills") || folio.nextElementSibling;
-        after?.scrollIntoView({ block: "start", behavior: "auto" });
-      } else {
-        const before = document.querySelector(".lockers");
-        before?.scrollIntoView({ block: "end", behavior: "auto" });
-      }
-      window.setTimeout(() => {
-        coolExit = false;
-      }, 480);
-    });
-    return true;
   }
 
   function cooldown(ms) {
@@ -118,78 +80,56 @@ import { initBook } from "./book3d.js";
 
   function inGate() {
     const r = sticky.getBoundingClientRect();
-    return r.top <= 88 && r.bottom > window.innerHeight * 0.42;
+    return r.top <= 88 && r.bottom > window.innerHeight * 0.28;
+  }
+
+  function holdScroll(dir) {
+    if (dir > 0) return step < LAST;
+    return step > OPEN;
   }
 
   function advance(dir) {
-    if (busy) return true;
+    if (busy) return;
     const next = step + dir;
-    if (next < OPEN) return false;
-    if (next > LAST) return false;
+    if (next < OPEN || next > LAST) return;
     applyStep(next, true);
-    return true;
   }
 
   function onWheel(e) {
-    if (coolExit) {
+    if (!inGate()) return;
+    if (Math.abs(e.deltaY) < 12) {
+      if (busy) e.preventDefault();
+      return;
+    }
+    const dir = e.deltaY > 0 ? 1 : -1;
+    if (busy && holdScroll(dir)) {
       e.preventDefault();
       return;
     }
-    if (fs) e.preventDefault();
-    if (Math.abs(e.deltaY) < 12) return;
-    const dir = e.deltaY > 0 ? 1 : -1;
-    if (!fs) {
-      if (inGate()) {
-        tryEnter(dir);
-        e.preventDefault();
-      }
-      return;
-    }
-    if (busy) return;
-    if (step === OPEN && dir < 0) {
-      tryExit(-1);
-      return;
-    }
-    if (step === SHUT && dir > 0) {
-      tryExit(1);
-      return;
-    }
+    if (!holdScroll(dir)) return;
+    e.preventDefault();
     advance(dir);
   }
 
   let touchY = null;
   function onTouchStart(e) {
-    if (!fs && inGate()) tryEnter(1);
-    if (!fs) return;
+    if (!inGate()) return;
     touchY = e.touches[0].clientY;
   }
   function onTouchMove(e) {
     if (touchY == null) return;
-    if (!fs) return;
-    e.preventDefault();
-    if (busy) return;
+    if (!inGate()) return;
     const dy = touchY - e.touches[0].clientY;
-    if (Math.abs(dy) < 28) return;
     const dir = dy > 0 ? 1 : -1;
+    if (busy && holdScroll(dir)) {
+      e.preventDefault();
+      return;
+    }
+    if (Math.abs(dy) < 28) return;
+    if (!holdScroll(dir)) return;
+    e.preventDefault();
     touchY = e.touches[0].clientY;
-    if (step === OPEN && dir < 0) {
-      tryExit(-1);
-      return;
-    }
-    if (step === SHUT && dir > 0) {
-      tryExit(1);
-      return;
-    }
     advance(dir);
-  }
-
-  let lastY = window.scrollY;
-  function onScroll() {
-    const y = window.scrollY;
-    const dir = y >= lastY ? 1 : -1;
-    lastY = y;
-    if (fs || coolExit || skipFs) return;
-    if (inGate()) tryEnter(dir);
   }
 
   tabs.forEach((btn) => {
@@ -204,23 +144,6 @@ import { initBook } from "./book3d.js";
   window.addEventListener("wheel", onWheel, { passive: false });
   window.addEventListener("touchstart", onTouchStart, { passive: true });
   window.addEventListener("touchmove", onTouchMove, { passive: false });
-  window.addEventListener("scroll", onScroll, { passive: true });
-  window.addEventListener("keydown", (e) => {
-    if (!fs) return;
-    if (e.key !== "Escape") return;
-    tryExit(step === OPEN ? -1 : 1);
-  });
-  document.querySelectorAll(".bar a[href^='#']").forEach((a) => {
-    a.addEventListener("click", () => {
-      if (!fs) return;
-      if (a.getAttribute("href") === "#projects") return;
-      setFs(false);
-      coolExit = true;
-      window.setTimeout(() => {
-        coolExit = false;
-      }, 480);
-    });
-  });
 
   const params = new URLSearchParams(location.search);
   const rawBook = params.get("book");

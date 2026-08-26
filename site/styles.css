@@ -384,13 +384,6 @@ html.book-ok .plays > .playboard {
   display: none;
 }
 
-html.book-fs,
-html.book-fs body {
-  overflow: hidden;
-  height: 100%;
-  overscroll-behavior: none;
-}
-
 .folio-sticky {
   position: sticky;
   top: var(--bar);
@@ -399,67 +392,8 @@ html.book-fs body {
   background: var(--bg);
 }
 
-html.book-fs .folio-sticky {
-  position: fixed;
-  left: 0;
-  right: 0;
-  top: var(--bar);
-  bottom: 0;
-  z-index: 8;
-  width: min(var(--max), calc(100% - 40px));
-  margin-inline: auto;
-  padding: 12px 0 10px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-html.book-fs .plays-head {
-  margin-bottom: 8px;
-  flex: none;
-}
-
-html.book-fs .plays-head .kicker {
-  display: none;
-}
-
-html.book-fs .plays-head h2 {
-  font-size: 1.35rem;
-}
-
-html.book-fs .book-chapters {
-  flex: none;
-}
-
-html.book-fs .book {
-  flex: 1 1 auto;
-  min-height: 0;
-  justify-content: flex-end;
-}
-
-html.book-fs .book-float {
-  padding: 12px 14px 10px;
-  font-size: 0.92rem;
-}
-
-html.book-fs .book-float h3 {
-  font-size: 1.05rem;
-}
-
-html.book-fs #book-canvas {
-  flex: 1 1 auto;
-  height: auto;
-  min-height: 180px;
-  max-height: 46vh;
-}
-
-html.book-fs .folio-hint {
-  flex: none;
-  margin-top: 8px;
-}
-
 .folio-spacer {
-  height: 36vh;
+  height: 8px;
 }
 
 .book-chapters {
@@ -501,15 +435,18 @@ html.book-fs .folio-hint {
   align-items: center;
   width: min(900px, 100%);
   margin: 0 auto;
+  max-height: calc(100svh - var(--bar) - 10.5rem);
 }
 
 #book-canvas {
   width: 100%;
-  height: 320px;
+  height: min(280px, 32svh);
+  max-height: 32svh;
+  min-height: 160px;
   display: block;
   order: 4;
   margin-top: auto;
-  flex: none;
+  flex: 1 1 auto;
 }
 
 .book-shadow {
@@ -807,6 +744,8 @@ html.book-fs .folio-hint {
   position: relative;
   display: grid;
   width: min(400px, 92%);
+  max-height: min(260px, 30svh);
+  overflow: hidden;
   pointer-events: none;
   flex: none;
 }
@@ -1442,7 +1381,12 @@ html.book-fs .folio-hint {
   }
 
   #book-canvas {
-    height: 240px;
+    height: min(220px, 28svh);
+    max-height: 28svh;
+  }
+
+  .folio-spacer {
+    height: 8px;
   }
 
   .holo-beam {
@@ -1452,10 +1396,6 @@ html.book-fs .folio-hint {
   .book-chapters button {
     font-size: 0.82rem;
     padding: 8px 8px;
-  }
-
-  .folio-spacer {
-    height: 78vh;
   }
 
   .pet,
